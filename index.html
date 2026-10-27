@@ -1,0 +1,1808 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>LoanShield</title>
+<meta name="description" content="Paste a threat from an illegal loan app. LoanShield flips each threat into the facts, names the law it breaks, and turns the message into evidence against the people who sent it.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230B5D5A'/%3E%3Cpath d='M16 6l8 3v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V9z' fill='%23F2B33D'/%3E%3C/svg%3E">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap');
+/* Layout: a deep-teal hero with a live phone, then alternating light and dark bands; every section leads with one visual, words come second. */
+:root{
+  /* One deliberate dark theme, matching the presentation: warm black, red signal, orange warmth. */
+  --bg:#0E0807; --surface:#1A1313; --sunk:#241A19; --ink:#F4EEEC; --mute:#A89A98; --line:#3A2A28;
+  --teal:#E63946; --teal-2:#FF5A66; --teal-soft:#2A0E10;
+  --deep:#140B0A; --deep-2:#1F1312; --on-deep:#F4EEEC; --on-deep-mute:#A89A98;
+  --marigold:#F4A261; --marigold-soft:#2A1A10;
+  --threat:#FF6F6F; --threat-soft:#2E1416; --ok:#6BCB8F;
+  --on-teal:#FFFFFF; --paper:#F4EEEC; --paper-ink:#1A1313;
+  --display:'Poppins',ui-sans-serif,system-ui,sans-serif;
+  --body:'Atkinson Hyperlegible',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --r:18px; color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*,*::before{transition:none!important;animation:none!important}}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 var(--body);-webkit-font-smoothing:antialiased}
+[hidden]{display:none!important}
+a{color:var(--teal)}
+:focus-visible{outline:3px solid var(--marigold);outline-offset:2px;border-radius:8px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;letter-spacing:-.015em}
+h2{font-size:clamp(1.9rem,4vw,2.8rem);font-weight:800;line-height:1.05}
+h3{font-size:1.12rem;font-weight:700;line-height:1.25}
+p{margin:0}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
+.muted{color:var(--mute)}
+.small{font-size:.88rem}
+.eyebrow{display:inline-flex;align-items:center;gap:.5rem;font:600 .74rem/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--teal)}
+.eyebrow::before{content:"";width:18px;height:2px;background:currentColor}
+.icon{width:1.15em;height:1.15em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* header */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:21;background:var(--deep)}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--deep) 92%,transparent);backdrop-filter:blur(12px);color:var(--on-deep)}
+header.top .wrap{display:flex;align-items:center;gap:1rem;height:62px}
+.logo{display:flex;align-items:center;gap:.55rem;font:800 1.18rem var(--display);color:inherit;text-decoration:none}
+.logo .mark{width:30px;height:30px;border-radius:9px;background:var(--marigold);color:var(--deep);display:grid;place-items:center}
+.logo .mark .icon{width:18px;height:18px;stroke-width:2.4}
+nav.links{display:flex;gap:.15rem;margin-left:auto}
+nav.links a{color:var(--on-deep-mute);text-decoration:none;font-size:.92rem;padding:.45rem .8rem;border-radius:99px;transition:.15s}
+nav.links a:hover{color:var(--on-deep);background:rgba(255,255,255,.08)}
+.help-pill{display:inline-flex;align-items:center;gap:.4rem;background:var(--marigold);color:#2A1E05;font:700 .88rem var(--body);padding:.45rem .85rem;border-radius:99px;white-space:nowrap;text-decoration:none}
+@media (max-width:820px){nav.links{display:none}.help-pill{margin-left:auto}}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;font:700 1rem var(--body);padding:.85rem 1.35rem;border-radius:14px;border:1.5px solid transparent;cursor:pointer;text-decoration:none;transition:transform .15s ease,box-shadow .15s,background .15s}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--teal);color:var(--on-teal);box-shadow:0 10px 24px -12px var(--teal)}
+.btn.gold{background:var(--marigold);color:#2A1E05;box-shadow:0 10px 24px -12px rgba(242,179,61,.9)}
+.btn.line{background:transparent;color:var(--on-deep);border-color:rgba(255,255,255,.25)}
+.btn.line:hover{background:rgba(255,255,255,.08)}
+.btn.ghost{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{background:var(--sunk)}
+.btn.sm{padding:.5rem .85rem;font-size:.86rem;border-radius:10px;box-shadow:none}
+.btn:disabled{opacity:.5;cursor:default;transform:none}
+.link-btn{background:none;border:0;padding:0;color:var(--teal);font:700 .92rem var(--body);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+
+/* HERO */
+.hero{background:radial-gradient(1200px 500px at 85% 10%,var(--deep-2),transparent 60%),var(--deep);color:var(--on-deep);overflow:hidden;position:relative}
+.hero::after{content:"";position:absolute;inset:auto -10% -1px;height:80px;background:var(--bg);clip-path:ellipse(60% 100% at 50% 100%)}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:3rem;align-items:center;padding-block:clamp(3rem,7vw,5.5rem) clamp(5rem,9vw,7rem);position:relative;z-index:1}
+.hero .eyebrow{color:var(--marigold)}
+.hero h1{font-size:clamp(2.6rem,6.4vw,4.6rem);font-weight:800;line-height:.98;margin-top:1rem}
+.hero h1 .flipword{display:inline-block;color:var(--marigold)}
+.hero .lede{font-size:1.15rem;color:var(--on-deep-mute);max-width:44ch;margin-top:1.2rem}
+.hero .ctas{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1.8rem}
+.trust{display:flex;flex-wrap:wrap;gap:.5rem 1.2rem;margin-top:1.8rem;color:var(--on-deep-mute);font-size:.86rem}
+.trust span{display:inline-flex;align-items:center;gap:.4rem}
+.trust .icon{color:var(--marigold)}
+@media (max-width:860px){.hero .wrap{grid-template-columns:1fr}.phone{margin-inline:auto}}
+
+/* phone mockup */
+.phone{width:min(330px,100%);background:#0B1716;border-radius:42px;padding:12px;box-shadow:0 40px 80px -30px rgba(0,0,0,.7),inset 0 0 0 2px rgba(255,255,255,.08);transform:rotate(2deg)}
+.screen{background:#E9E2D6;border-radius:32px;overflow:hidden;color:#13201E}
+.chat-top{background:#0B5D5A;color:#fff;display:flex;align-items:center;gap:.6rem;padding:1.1rem .9rem .7rem}
+.chat-top .av{width:32px;height:32px;border-radius:50%;background:#C2412F;display:grid;place-items:center;font:700 .8rem var(--body)}
+.chat-top b{display:block;font-size:.9rem}.chat-top small{font-size:.72rem;opacity:.8}
+.chat{padding:.9rem .7rem 1.1rem;display:grid;gap:.6rem;min-height:400px;background-image:radial-gradient(rgba(0,0,0,.05) 1px,transparent 1px);background-size:14px 14px}
+.chat .stamp{justify-self:center;font-size:.68rem;background:#fff;padding:.15rem .5rem;border-radius:6px;color:#5A6B66}
+.chat-foot{display:flex;align-items:center;gap:.5rem;background:#fff;margin:0 .6rem .7rem;border-radius:99px;padding:.45rem .8rem;font-size:.75rem;color:#5A6B66}
+.chat-foot .sh{margin-left:auto;background:#F2B33D;color:#2A1E05;font-weight:700;border-radius:99px;padding:.2rem .6rem}
+
+/* flip cards (shared by phone and results) */
+.fcard{perspective:1200px;cursor:pointer;background:none;border:0;padding:0;text-align:left;font:inherit;color:inherit;width:100%}
+.fcard .inner{display:grid;transition:transform .7s cubic-bezier(.2,.8,.2,1);transform-style:preserve-3d}
+.fcard.flipped .inner{transform:rotateY(180deg)}
+.face{grid-area:1/1;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:16px;padding:.9rem 1rem;min-width:0}
+.face.back{transform:rotateY(180deg)}
+.chat .face{padding:.6rem .75rem;border-radius:12px 12px 12px 3px;font-size:.84rem;line-height:1.35}
+.chat .face.front{background:#fff;box-shadow:0 1px 1px rgba(0,0,0,.12)}
+.chat .face.back{background:#0B5D5A;color:#fff}
+.chat .face .tag{display:block;font:700 .62rem var(--mono);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.15rem}
+.chat .face.front .tag{color:#C2412F}.chat .face.back .tag{color:#F2B33D}
+
+/* STATS */
+.stats-band{margin-top:-2.5rem;position:relative;z-index:2}
+.stat-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:var(--surface);border-radius:22px;box-shadow:0 20px 50px -30px rgba(10,46,44,.45);border:1px solid var(--line)}
+.stat{padding:1.4rem 1.6rem;display:flex;gap:1rem;align-items:center}
+.stat+.stat{border-left:1px solid var(--line)}
+.stat b{font:800 clamp(1.9rem,4vw,2.6rem)/1 var(--display);color:var(--teal);font-variant-numeric:tabular-nums}
+.stat span{font-size:.88rem;color:var(--mute);line-height:1.3}
+@media (max-width:720px){.stat-row{grid-template-columns:1fr}.stat+.stat{border-left:0;border-top:1px solid var(--line)}}
+
+/* sections */
+section.band{padding-block:clamp(3.5rem,8vw,6rem)}
+section.dark{background:var(--deep);color:var(--on-deep)}
+section.dark .muted{color:var(--on-deep-mute)}
+section.dark .eyebrow{color:var(--marigold)}
+.sec-head{display:grid;gap:.8rem;margin-bottom:2.2rem;max-width:60ch}
+.sec-head.center{margin-inline:auto;text-align:center;justify-items:center}
+
+/* TOOL */
+.tool{max-width:900px;margin:0 auto}
+.composer{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:1.1rem;box-shadow:0 24px 60px -36px rgba(10,46,44,.5)}
+.composer textarea{width:100%;min-height:110px;resize:vertical;border:0;background:var(--sunk);color:var(--ink);border-radius:14px;padding:1rem 1.1rem;font:1.04rem/1.5 var(--body)}
+.composer textarea:focus{outline:2px solid var(--teal)}
+.composer .row{display:flex;flex-wrap:wrap;gap:.7rem;align-items:center;margin-top:.9rem}
+.examples{display:flex;flex-wrap:wrap;gap:.45rem;flex:1;min-width:14rem}
+.examples button{display:inline-flex;align-items:center;gap:.35rem;font:600 .84rem var(--body);background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:99px;padding:.4rem .8rem;cursor:pointer;transition:.15s}
+.examples button:hover{border-color:var(--teal);color:var(--teal)}
+.examples .icon{color:var(--threat)}
+.privacy{display:flex;gap:.45rem;align-items:center;justify-content:center;color:var(--mute);font-size:.84rem;margin-top:.9rem}
+
+.result{margin-top:2rem;display:grid;gap:1.6rem}
+.verdict{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.8rem}
+.meter{display:flex;align-items:center;gap:.8rem;flex:1;min-width:14rem}
+.meter .track{flex:1;height:10px;border-radius:99px;background:linear-gradient(90deg,var(--teal-soft),var(--marigold-soft),var(--threat-soft));overflow:hidden;position:relative}
+.meter .track i{position:absolute;top:-3px;width:16px;height:16px;border-radius:50%;background:var(--threat);border:3px solid var(--surface);box-shadow:0 0 0 1px var(--line);transform:translateX(-50%)}
+.pill{display:inline-flex;align-items:center;gap:.35rem;font:700 .84rem var(--body);padding:.35rem .8rem;border-radius:99px;background:var(--sunk);color:var(--ink);white-space:nowrap}
+.pill.critical,.pill.high{background:var(--threat);color:#fff}
+.pill.watch{background:var(--marigold);color:#2A1E05}
+.pill.clear{background:var(--teal-soft);color:var(--teal)}
+.hint{font-size:.84rem;color:var(--mute);display:flex;align-items:center;gap:.4rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem}
+.cards .fcard,.cards .inner{height:100%}
+.cards .face{padding:1.1rem 1.15rem 1.2rem;display:flex;flex-direction:column;gap:.55rem}
+.cards .front{background:var(--surface);border:1px solid var(--line);box-shadow:0 8px 24px -18px rgba(0,0,0,.4)}
+.cards .back{background:var(--teal);color:var(--on-teal)}
+.cards .kind{display:flex;align-items:center;gap:.5rem;font:700 .7rem var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.cards .front .kind{color:var(--threat)}
+.cards .back .kind{color:var(--marigold)}
+.cards .kind .ic{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;background:var(--threat-soft)}
+.cards .back .kind .ic{background:rgba(255,255,255,.15)}
+.cards q{quotes:none;font:500 1.12rem/1.45 var(--body);color:var(--mute);flex:1;display:flex;align-items:center}
+.cards q mark{background:none;color:var(--ink);font-weight:700;text-decoration:line-through;text-decoration-color:var(--threat);text-decoration-thickness:2.5px}
+.cards .back b{font:700 1.08rem/1.25 var(--display)}
+.cards .back p{font-size:.88rem;opacity:.92}
+.cards .turn{margin-top:auto;font-size:.76rem;color:var(--mute);display:flex;align-items:center;gap:.3rem}
+.cards .back .turn{color:inherit;opacity:.75}
+.laws{display:flex;flex-wrap:wrap;gap:.3rem}
+.law{font:600 .7rem var(--mono);background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);padding:.15rem .45rem;border-radius:6px}
+.none{background:var(--surface);border:1px dashed var(--line);border-radius:var(--r);padding:1.2rem}
+
+.support{display:flex;flex-wrap:wrap;gap:.8rem 1.6rem;align-items:center;background:var(--threat-soft);border-radius:var(--r);padding:1rem 1.3rem}
+.support .n{display:flex;align-items:baseline;gap:.4rem}
+.support .n b{font:800 1.4rem var(--display);color:var(--threat)}
+
+/* case tracker */
+.case{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:1.4rem 1.4rem 1.2rem}
+.case-head{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1.3rem}
+.case-head .score{font:800 1.1rem var(--display);color:var(--teal)}
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));position:relative}
+.steps::before{content:"";position:absolute;top:23px;left:10%;right:10%;height:3px;background:var(--sunk);border-radius:3px}
+.steps .fill{position:absolute;top:23px;left:10%;height:3px;background:var(--teal);border-radius:3px;transition:width .6s ease}
+.steps li{display:flex;flex-direction:column;align-items:center;text-align:center;gap:.45rem;position:relative;padding:0 .3rem}
+.node{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:var(--surface);border:3px solid var(--sunk);color:var(--mute);position:relative;z-index:1;transition:.3s}
+.node .icon{width:20px;height:20px}
+.steps li.on .node{background:var(--teal);border-color:var(--teal);color:var(--on-teal);box-shadow:0 0 0 6px var(--teal-soft)}
+.steps .t{font-weight:700;font-size:.92rem;line-height:1.2}
+.steps .d{font-size:.78rem;color:var(--mute);overflow-wrap:anywhere;line-height:1.35}
+.steps .act{margin-top:.2rem}
+@media (max-width:760px){
+  .steps{grid-template-columns:1fr;gap:1rem}
+  .steps::before,.steps .fill{display:none}
+  .steps li{flex-direction:row;text-align:left;align-items:center;flex-wrap:wrap}
+  .steps li>div{flex:1;min-width:10rem}
+}
+.consent{font-size:.8rem;color:var(--mute);margin-top:1rem;text-align:center}
+.ai{text-align:center;font-size:.9rem}
+
+/* BORROW */
+.borrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:2rem;align-items:center}
+@media (max-width:820px){.borrow{grid-template-columns:1fr}}
+.sliders{display:grid;gap:1.3rem;background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:1.6rem}
+.sl label{display:flex;justify-content:space-between;align-items:baseline;font-weight:700;font-size:.92rem;margin-bottom:.45rem}
+.sl label output{font:800 1.25rem var(--display);color:var(--teal);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--teal);height:28px}
+details.flags-q{border-top:1px solid var(--line);padding-top:1rem}
+details.flags-q summary{cursor:pointer;font-weight:700;font-size:.92rem}
+.check{display:flex;gap:.55rem;align-items:flex-start;font-size:.9rem;margin-top:.6rem}
+.check input{margin-top:.25rem;accent-color:var(--teal)}
+.tag-card{position:relative;background:var(--deep);color:var(--on-deep);border-radius:28px;padding:2rem 1.8rem 1.6rem;overflow:hidden}
+.tag-card::before{content:"";position:absolute;top:22px;right:24px;width:18px;height:18px;border-radius:50%;background:var(--bg);box-shadow:inset 0 0 0 4px rgba(0,0,0,.15)}
+.tag-card .eyebrow{color:var(--marigold)}
+.apr{font:800 clamp(3.4rem,10vw,5.6rem)/1 var(--display);letter-spacing:-.04em;margin-top:.6rem;font-variant-numeric:tabular-nums}
+.apr.danger{color:#FF9C8C}.apr.caution{color:var(--marigold)}.apr.ok{color:#8FE0B0}
+.apr-sub{color:var(--on-deep-mute);margin-top:.4rem}
+.compare{display:grid;gap:.6rem;margin-top:1.5rem}
+.bar{display:grid;grid-template-columns:7.5rem minmax(0,1fr) 4.2rem;gap:.7rem;align-items:center;font-size:.85rem;color:var(--on-deep-mute)}
+.bar .track{height:12px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden}
+.bar .track i{display:block;height:100%;border-radius:99px;background:#8FE0B0;transition:width .4s ease}
+.bar.them{color:var(--on-deep)}
+.bar.them .track i{background:#FF9C8C}
+.bar .v{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;color:var(--on-deep)}
+.flag-list{list-style:none;padding:0;margin:1.3rem 0 0;display:grid;gap:.45rem;font-size:.88rem;color:var(--on-deep-mute)}
+.flag-list li{display:flex;gap:.55rem}
+.flag-list li::before{content:"!";flex:none;width:18px;height:18px;border-radius:50%;background:var(--marigold);color:#2A1E05;font:800 .7rem/18px var(--body);text-align:center;margin-top:.15em}
+.safer{margin-top:1.3rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,.12);font-size:.88rem;color:var(--on-deep-mute)}
+
+/* PIPELINE loop */
+.system{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:3rem;align-items:center}
+@media (max-width:860px){.system{grid-template-columns:1fr}}
+.loop{position:relative;width:min(440px,100%);aspect-ratio:1;margin-inline:auto}
+.loop svg.ring{position:absolute;inset:0;width:100%;height:100%}
+.hub{position:absolute;inset:32%;border-radius:50%;background:var(--deep-2);display:grid;place-items:center;text-align:center;padding:.8rem;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.hub b{font:800 1.05rem/1.1 var(--display)}
+.hub span{font-size:.74rem;color:var(--on-deep-mute);display:block;margin-top:.25rem}
+.stage{position:absolute;width:23%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;border:0;cursor:pointer;display:grid;place-items:center;align-content:center;gap:.15rem;font:700 .82rem var(--body);transition:transform .2s,box-shadow .2s;color:var(--on-deep);background:var(--deep-2);box-shadow:inset 0 0 0 2px rgba(255,255,255,.14)}
+.stage .icon{width:24px;height:24px}
+.stage.app{background:var(--teal-2);color:#04211F;box-shadow:none}
+.stage:hover{transform:translate(-50%,-50%) scale(1.06)}
+.stage[aria-pressed="true"]{box-shadow:0 0 0 4px var(--marigold)}
+.stage-panel{background:var(--deep-2);border-radius:24px;padding:1.8rem;box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+.stage-panel .who{display:inline-flex;gap:.4rem;align-items:center;font:700 .76rem var(--body);padding:.3rem .7rem;border-radius:99px;margin-top:.8rem}
+.stage-panel .who.app{background:var(--teal-2);color:#04211F}
+.stage-panel .who.ppl{background:rgba(255,255,255,.1);color:var(--on-deep)}
+.stage-panel h3{font-size:1.8rem;font-weight:800}
+.stage-panel p.big{font-size:1.1rem;margin-top:.8rem}
+.stage-panel ul{list-style:none;padding:0;margin:1.2rem 0 0;display:grid;gap:.6rem}
+.stage-panel li{display:flex;gap:.6rem;align-items:flex-start;color:var(--on-deep-mute)}
+.stage-panel li .icon{color:var(--marigold);margin-top:.2em}
+.legend{display:flex;gap:1.2rem;flex-wrap:wrap;font-size:.85rem;color:var(--on-deep-mute);margin-top:1.4rem;justify-content:center}
+.legend span{display:inline-flex;gap:.45rem;align-items:center}
+.legend i{width:14px;height:14px;border-radius:50%;background:var(--deep-2);box-shadow:inset 0 0 0 2px rgba(255,255,255,.2);display:inline-block}
+.legend i.app{background:var(--teal-2);box-shadow:none}
+
+/* why different */
+.diff{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.2rem}
+.diff article{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:1.5rem;display:grid;gap:.7rem;align-content:start}
+.diff .ic{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:var(--teal-soft);color:var(--teal)}
+.diff .ic .icon{width:24px;height:24px}
+.diff .vs{font-size:.82rem;color:var(--mute);border-top:1px dashed var(--line);padding-top:.7rem}
+.diff .vs b{color:var(--ink)}
+@media (max-width:820px){.diff{grid-template-columns:1fr}}
+
+/* operator map */
+.map-top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1.2rem}
+.seg{display:inline-flex;background:var(--sunk);border-radius:12px;padding:4px}
+.seg button{border:0;background:transparent;color:var(--mute);font:700 .86rem var(--body);padding:.45rem 1rem;border-radius:9px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.seg button:disabled{opacity:.45;cursor:default}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.8rem;margin-bottom:1.4rem}
+.stats div{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:1rem 1.1rem}
+.stats div b{display:block;font:800 1.9rem/1 var(--display);font-variant-numeric:tabular-nums;color:var(--teal)}
+.stats div span{font-size:.8rem;color:var(--mute)}
+@media (max-width:640px){.stats{grid-template-columns:1fr 1fr}}
+.ops{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,480px),1fr));gap:1rem;min-width:0}
+.ops>*{min-width:0}
+.op{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:1.1rem 1.2rem}
+.op.you{border-color:var(--marigold);box-shadow:0 0 0 3px var(--marigold-soft)}
+.op-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:.5rem;align-items:center}
+.op-meta{font-size:.84rem;color:var(--mute);margin-top:.2rem}
+.graph-wrap{overflow-x:auto;margin-top:.7rem}
+.graph-wrap svg{display:block;min-width:440px;width:100%;height:auto}
+.live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ok);margin-right:.4rem;vertical-align:middle;animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.3}}
+
+/* help band */
+.help{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;margin-top:2rem}
+.help div{background:rgba(255,255,255,.06);border-radius:20px;padding:1.4rem;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.help b{display:block;font:800 2.6rem/1 var(--display);color:var(--marigold)}
+.help span{color:var(--on-deep-mute);font-size:.9rem}
+@media (max-width:640px){.help{grid-template-columns:1fr}}
+
+footer{padding-block:2.5rem;background:var(--deep);color:var(--on-deep-mute);border-top:1px solid rgba(255,255,255,.08);font-size:.88rem}
+footer .wrap{display:flex;flex-wrap:wrap;gap:1rem 2rem;justify-content:space-between;align-items:center}
+footer .logo{color:var(--on-deep)}
+footer .links2{display:flex;flex-wrap:wrap;gap:1.2rem}
+footer .link-btn{color:var(--marigold)}
+
+/* dialogs */
+dialog{border:0;border-radius:24px;padding:0;width:min(640px,calc(100vw - 24px));max-height:calc(100dvh - 48px);background:var(--surface);color:var(--ink);box-shadow:0 30px 80px -20px rgba(0,0,0,.5)}
+dialog[open]{animation:pop .25s ease}
+@keyframes pop{from{opacity:0;transform:translateY(12px) scale(.98)}}
+dialog::backdrop{background:rgba(7,30,29,.55);backdrop-filter:blur(4px)}
+.dlg-head{display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:1.2rem 1.4rem;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:1}
+.dlg-head h3{display:flex;align-items:center;gap:.6rem;font-size:1.25rem}
+.dlg-head h3 .ic{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:var(--teal-soft);color:var(--teal)}
+.dlg-body{padding:1.3rem 1.4rem;display:grid;gap:1rem}
+.x{background:var(--sunk);border:0;border-radius:50%;width:34px;height:34px;display:grid;place-items:center;color:var(--ink);cursor:pointer}
+.field label{display:block;font-size:.86rem;font-weight:700;margin-bottom:.3rem}
+.field input{width:100%;font:1rem var(--body);padding:.65rem .8rem;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.field input:focus{outline:2px solid var(--teal);border-color:transparent}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+@media (max-width:480px){.fields{grid-template-columns:1fr}}
+textarea.out{width:100%;min-height:200px;font:.84rem/1.5 var(--mono);border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);padding:.8rem}
+.radios{display:flex;gap:.4rem;flex-wrap:wrap}
+.radios label{cursor:pointer;position:relative}
+.radios input{position:absolute;opacity:0}
+.radios span{display:inline-block;padding:.45rem 1rem;border-radius:99px;border:1px solid var(--line);font-size:.92rem}
+.radios input:checked+span{background:var(--teal);color:var(--on-teal);border-color:var(--teal)}
+.radios input:focus-visible+span{outline:3px solid var(--marigold)}
+.bubble-out{background:#E9E2D6;border-radius:16px;padding:1rem}
+.bubble-out textarea{width:100%;min-height:140px;border:0;border-radius:12px 12px 3px 12px;background:#D9FDD3;color:#13201E;padding:.8rem .9rem;font:.95rem/1.45 var(--body);resize:vertical}
+.btns{display:flex;flex-wrap:wrap;gap:.5rem}
+.vault{list-style:none;padding:0;margin:0;display:grid;gap:.6rem;position:relative}
+.vault li{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:.75rem .9rem;font-size:.9rem;position:relative}
+.vault li+li::before{content:"";position:absolute;left:22px;top:-11px;width:2px;height:10px;background:var(--teal)}
+.vault li.bad{border-color:var(--threat);background:var(--threat-soft)}
+.vault .meta{display:flex;gap:.8rem;flex-wrap:wrap;font-size:.76rem;color:var(--mute)}
+.vault .hash{font:.7rem var(--mono);color:var(--mute);overflow-wrap:anywhere;margin-top:.3rem}
+.status{display:flex;gap:.5rem;align-items:center;font-size:.92rem;font-weight:700;padding:.6rem .8rem;border-radius:12px}
+.status.ok{color:var(--ok);background:var(--teal-soft)}.status.bad{color:var(--threat);background:var(--threat-soft)}
+.confirm{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;background:var(--threat-soft);padding:.6rem .8rem;border-radius:10px;font-size:.9rem}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--deep);color:var(--on-deep);padding:.75rem 1.15rem;border-radius:14px;font-size:.92rem;opacity:0;pointer-events:none;transition:.25s;z-index:50;max-width:calc(100vw - 32px);box-shadow:0 12px 30px -10px rgba(0,0,0,.5)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@keyframes rise{from{opacity:.001;transform:translateY(14px)}}
+.rise{animation:rise .5s ease both}
+
+/* novelty compare */
+section.alt2{background:var(--surface);border-block:1px solid var(--line)}
+.vs-grid{display:grid;gap:1rem;max-width:980px;margin:0 auto}
+.vs-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto minmax(0,1.2fr);gap:1.2rem;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:1.2rem 1.4rem}
+.num-big{font:800 2.6rem/1 var(--display);color:var(--marigold);width:2.2rem;text-align:center}
+.vs-row .lbl{display:block;font:600 .68rem var(--mono);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.3rem}
+.vs-row .old{color:var(--mute);font-size:.95rem}
+.vs-row .old .lbl{color:var(--mute)}
+.vs-row .old p{text-decoration:line-through;text-decoration-color:color-mix(in srgb,var(--threat) 60%,transparent)}
+.vs-row .to{font:800 1.6rem var(--display);color:var(--teal)}
+.vs-row .newc{background:var(--teal);color:var(--on-teal);border-radius:16px;padding:1rem 1.15rem}
+.vs-row .newc .lbl{color:var(--marigold)}
+.vs-row .newc h3{font-size:1.25rem}
+.vs-row .newc p{font-size:.92rem;opacity:.9;margin-top:.2rem}
+@media (max-width:760px){.vs-row{grid-template-columns:auto minmax(0,1fr)}.vs-row .to{display:none}.vs-row .newc{grid-column:1/-1}}
+
+/* accessibility */
+.langs{display:inline-flex;gap:2px;background:rgba(255,255,255,.1);border-radius:99px;padding:3px;margin-left:auto}
+.langs button{border:0;background:transparent;color:var(--on-deep-mute);font:700 .82rem var(--body);padding:.35rem .7rem;border-radius:99px;cursor:pointer}
+.langs button[aria-pressed="true"]{background:var(--marigold);color:#2A1E05}
+@media (max-width:820px){header .langs{margin-left:auto}}
+.langs.big{background:var(--sunk);margin:0;flex-wrap:wrap}
+.langs.big button{color:var(--ink);font-size:.95rem;padding:.5rem .9rem}
+.easy{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1rem}
+.easy article{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:1.4rem;display:flex;flex-direction:column;gap:.6rem;align-items:flex-start}
+.easy .ic,.no-phone .ic{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:var(--marigold-soft);color:var(--ink)}
+.easy .ic .icon,.no-phone .ic .icon{width:26px;height:26px}
+.easy p{color:var(--mute);font-size:.92rem}
+.easy article>.btn,.easy .langs{margin-top:auto}
+.easy .soon{margin-top:auto;font-size:.82rem;color:var(--teal);font-weight:700}
+@media (max-width:980px){.easy{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.easy{grid-template-columns:1fr}}
+.no-phone{display:flex;gap:1rem;align-items:center;margin-top:1rem;background:var(--deep);color:var(--on-deep);border-radius:22px;padding:1.2rem 1.4rem}
+.no-phone .ic{background:var(--marigold);color:#2A1E05;flex:none}
+.no-phone p{color:var(--on-deep-mute)}.no-phone b{color:var(--on-deep)}
+.helper-steps{background:var(--marigold-soft);border:2px solid var(--marigold);border-radius:20px;padding:1.1rem 1.3rem;margin-bottom:1rem}
+.helper-steps b{display:inline-flex;gap:.4rem;align-items:center}
+.helper-steps ol{margin:.5rem 0 0;padding-left:1.3rem;display:grid;gap:.3rem}
+html.helper{font-size:118%}
+html.helper .cards{grid-template-columns:1fr}
+html.helper .cards .back b{font-size:1.35rem}
+html.helper .cards .back p,html.helper .cards q{font-size:1.1rem}
+html.helper .composer textarea{font-size:1.2rem}
+.listen-btn{display:inline-flex;align-items:center;gap:.4rem}
+:lang(ta) .cards .back b,.ta .cards .back b{line-height:1.4}
+
+/* voice, screenshot, one tap */
+.inputs{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-top:.7rem}
+.in-btn{display:inline-flex;align-items:center;gap:.45rem;font:700 .92rem var(--body);background:var(--teal-soft);color:var(--teal);border:0;border-radius:12px;padding:.6rem 1rem;cursor:pointer}
+.in-btn:hover{filter:brightness(.97)}
+.in-btn[aria-pressed="true"]{background:var(--threat);color:#fff;animation:pulse 1.2s infinite}
+.understood{display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:.8rem 1rem}
+.understood .lbl{font:600 .7rem var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--mute);margin-right:.3rem}
+.chip{display:inline-flex;gap:.35rem;align-items:center;font-size:.86rem;background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:.25rem .7rem}
+.chip i{font-style:normal;font:600 .66rem var(--mono);text-transform:uppercase;color:var(--mute)}
+.chip.warn{border-color:var(--threat);color:var(--threat)}
+.onetap{background:var(--deep);color:var(--on-deep);border-radius:24px;padding:1.4rem 1.5rem;display:flex;flex-wrap:wrap;gap:1rem 1.5rem;align-items:center;justify-content:space-between}
+.onetap h3{font-size:1.35rem;display:flex;gap:.5rem;align-items:center}
+.onetap h3 .icon{color:var(--marigold)}
+.onetap p{color:var(--on-deep-mute);font-size:.92rem;max-width:52ch;margin-top:.3rem}
+.onetap .btn.gold{font-size:1.08rem;padding:1rem 1.6rem}
+.hour{flex-basis:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.8rem;margin-top:.4rem}
+.hour div{background:var(--deep-2);border-radius:16px;padding:1rem;display:grid;gap:.5rem;align-content:start;box-shadow:inset 0 0 0 1px rgba(255,255,255,.07)}
+.hour b{font:800 1.4rem var(--display);color:var(--marigold)}
+.hour p{color:var(--on-deep);margin:0;font-size:.92rem}
+.hour .btn{justify-self:start}
+@media (max-width:720px){.hour{grid-template-columns:1fr}}
+
+/* start here: two paths */
+.paths{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:1.2rem;align-items:stretch}
+@media (max-width:820px){.paths{grid-template-columns:1fr}}
+.path{border-radius:26px;padding:1.8rem;display:flex;flex-direction:column;gap:.8rem;align-items:flex-start;position:relative}
+.path.diy{background:var(--surface);border:1px solid var(--line)}
+.path.assist{background:var(--deep);color:var(--on-deep);box-shadow:0 30px 60px -36px rgba(10,46,44,.8)}
+.path.assist p{color:var(--on-deep-mute)}
+.ptag{font:700 .72rem var(--mono);letter-spacing:.1em;text-transform:uppercase;padding:.3rem .7rem;border-radius:99px;background:var(--teal-soft);color:var(--teal)}
+.path.assist .ptag{background:var(--marigold);color:#2A1E05}
+.pic{width:64px;height:64px;border-radius:20px;display:grid;place-items:center;background:var(--teal-soft);color:var(--teal);margin-top:.4rem}
+.path.assist .pic{background:rgba(242,179,61,.16);color:var(--marigold)}
+.pic .icon{width:32px;height:32px}
+.path h3{font-size:1.6rem;font-weight:800}
+.path p{color:var(--mute)}
+.ways{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:.5rem}
+.ways li{display:inline-flex;gap:.35rem;align-items:center;font-size:.88rem;background:var(--bg);border-radius:99px;padding:.3rem .75rem}
+.path.diy .btn{margin-top:auto}
+.path.assist .langs.big{background:rgba(255,255,255,.08)}
+.path.assist .langs.big button{color:var(--on-deep)}
+.path.assist .langs.big button[aria-pressed="true"]{color:#2A1E05}
+.help-opts{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;width:100%;margin-top:auto}
+@media (max-width:480px){.help-opts{grid-template-columns:1fr}}
+.opt{display:flex;gap:.8rem;align-items:center;text-align:left;background:var(--marigold);color:#2A1E05;border:0;border-radius:18px;padding:1rem 1.1rem;cursor:pointer;font:inherit;transition:transform .15s}
+.opt:hover{transform:translateY(-2px)}
+.opt+.opt{background:var(--on-deep);color:var(--deep)}
+.opt .icon{width:28px;height:28px}
+.opt b{display:block;font:800 1.05rem var(--display)}
+.opt small{display:block;font-size:.8rem;opacity:.8}
+.inbox{margin-top:1rem;background:var(--surface);border:1px dashed var(--teal);border-radius:20px;padding:1.1rem 1.3rem}
+.inbox h3{font-size:1rem;display:flex;justify-content:space-between;gap:1rem}
+.inbox ul{list-style:none;padding:0;margin:.6rem 0 0;display:grid;gap:.4rem;font-size:.9rem}
+.inbox li{display:flex;flex-wrap:wrap;gap:.3rem 1rem;background:var(--bg);border-radius:10px;padding:.5rem .7rem}
+.sent{display:grid;gap:.8rem;justify-items:start}
+.sent .big{width:56px;height:56px;border-radius:50%;background:var(--teal);color:var(--on-teal);display:grid;place-items:center}
+
+/* leaked photo */
+.leak-strip{display:flex;align-items:center;gap:1rem;width:100%;text-align:left;font:inherit;cursor:pointer;background:var(--threat-soft);color:var(--ink);border:1.5px solid var(--threat);border-radius:20px;padding:1rem 1.2rem;margin-bottom:1.2rem;transition:transform .15s}
+.leak-strip:hover{transform:translateY(-1px)}
+.leak-strip .ic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:var(--threat);color:#fff;flex:none}
+.leak-strip b{display:block;font:800 1.05rem var(--display)}
+.leak-strip small{display:block;color:var(--mute);font-size:.88rem}
+.leak-strip .go{margin-left:auto;font-weight:700;color:var(--threat);white-space:nowrap}
+@media (max-width:560px){.leak-strip{flex-wrap:wrap}.leak-strip .go{margin-left:0}}
+.calm{background:var(--teal);color:var(--on-teal);border-radius:16px;padding:1rem 1.1rem;display:grid;gap:.3rem}
+.calm b{font:800 1.1rem var(--display)}
+.calm span{opacity:.9;font-size:.92rem}
+.leak-steps{list-style:none;padding:0;margin:0;display:grid;gap:1rem}
+.leak-steps li{display:grid;grid-template-columns:32px minmax(0,1fr);gap:.8rem}
+.leak-steps .n{width:32px;height:32px;border-radius:50%;background:var(--marigold);color:#2A1E05;display:grid;place-items:center;font:800 .9rem var(--display)}
+.leak-steps li>div{display:grid;gap:.45rem;justify-items:start}
+.leak-steps p{font-size:.9rem;color:var(--mute)}
+.leak-steps .fields,.leak-steps textarea{width:100%}
+.field select{width:100%;font:1rem var(--body);padding:.65rem .8rem;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+
+/* ===== warm-black theme overrides ===== */
+body{background:radial-gradient(900px 600px at 100% 0%,#1F0A0B,transparent 60%),var(--bg)}
+h1,h2,h3{letter-spacing:-.02em}
+.eyebrow{border:1px solid var(--teal);background:var(--teal-soft);padding:.4rem .75rem;border-radius:99px;color:var(--teal)}
+.eyebrow::before{display:none}
+.hero .eyebrow,section.dark .eyebrow{color:var(--teal);border-color:var(--teal)}
+header.top{background:color-mix(in srgb,var(--bg) 85%,transparent);border-bottom:1px solid var(--line)}
+body::before{background:var(--bg)}
+.logo .mark{background:var(--teal);color:#fff}
+.hero{background:radial-gradient(700px 520px at 82% 40%,#2A0E10,transparent 65%),transparent}
+.hero::after{display:none}
+.hero h1 .flipword{color:var(--teal)}
+.btn.gold,.help-pill{background:var(--teal);color:#fff;box-shadow:0 12px 28px -12px rgba(230,57,70,.8)}
+.btn.line{border-color:var(--line)}
+section.alt2{background:rgba(255,255,255,.015)}
+section.dark{background:var(--deep)}
+/* phone mockup: same as the title slide */
+.phone{background:#1A1414;box-shadow:0 40px 80px -30px rgba(0,0,0,.8),inset 0 0 0 2px #3A2A28}
+.screen{background:#201818;color:var(--ink)}
+.chat-top{background:#261B1A;color:var(--ink);border-bottom:1px solid #3A2A28}
+.chat-top .av{background:var(--teal)}
+.chat{background-image:none}
+.chat .stamp{background:#2A1F1E;color:var(--mute)}
+.chat .face.front{background:#2E1A1A;color:#EAD9DA;box-shadow:inset 0 0 0 1px #5A2630}
+.chat .face.back{background:var(--paper);color:var(--paper-ink)}
+.chat .face.front .tag{color:var(--teal)}.chat .face.back .tag{color:var(--teal)}
+.chat-foot{background:#2A1F1E;color:var(--mute)}
+.chat-foot .sh{background:var(--teal);color:#fff}
+/* fact cards: threat is dark, the fact is light */
+.cards .front{background:var(--surface);border-color:var(--line)}
+.cards .back{background:var(--paper);color:var(--paper-ink)}
+.cards .back .kind{color:var(--teal)}
+.cards .back .kind .ic{background:#F6D9DB;color:var(--teal)}
+.cards .back p{opacity:.85}
+.cards .back .law{background:#fff;border-color:#E2D4D2;color:var(--paper-ink)}
+.cards .front .kind .ic{background:var(--teal-soft);color:var(--teal)}
+.meter .track{background:linear-gradient(90deg,#3A2A28,#5A3A20,#5A2630)}
+.meter .track i{background:var(--teal);border-color:var(--bg)}
+.pill.watch{color:#2A1406}
+.steps li.on .node{box-shadow:0 0 0 6px var(--teal-soft)}
+.case,.composer,.op,.stats div,.vs-row,.easy article,.path.diy,.understood{background:var(--surface);border-color:var(--line)}
+.composer{box-shadow:0 30px 60px -40px rgba(230,57,70,.45)}
+.composer textarea{background:var(--sunk)}
+.in-btn{background:var(--teal-soft);color:#FF8A92}
+.examples button{background:transparent}
+.vs-row .newc{background:var(--teal-soft);color:var(--ink);box-shadow:inset 0 0 0 1px var(--teal)}
+.vs-row .newc .lbl{color:var(--teal)}
+.num-big{color:var(--teal)}
+.path.assist{background:linear-gradient(160deg,#2A0E10,#1A1313 70%);box-shadow:inset 0 0 0 1px #5A2630,0 30px 60px -36px rgba(230,57,70,.5)}
+.path.assist .ptag{background:var(--teal);color:#fff}
+.path.assist .pic{background:rgba(230,57,70,.16);color:#FF8A92}
+.pic{background:var(--sunk);color:var(--ink)}
+.ptag{background:var(--sunk);color:var(--ink)}
+.opt{background:var(--teal);color:#fff}
+.opt+.opt{background:var(--paper);color:var(--paper-ink)}
+.langs button[aria-pressed="true"],.path.assist .langs.big button[aria-pressed="true"]{background:var(--teal);color:#fff}
+.langs{background:#241A19}
+.no-phone{background:var(--surface);box-shadow:inset 0 0 0 1px var(--line)}
+.no-phone .ic{background:var(--marigold);color:#2A1406}
+.leak-strip{background:#2E1416;border-color:#5A2630}
+.leak-strip .go{color:#FF8A92}
+.calm{background:var(--paper);color:var(--paper-ink)}
+.onetap{background:linear-gradient(160deg,#2A0E10,#1A1313 75%);box-shadow:inset 0 0 0 1px #5A2630}
+.onetap h3 .icon,.hour b{color:var(--marigold)}
+.hour div{background:#1A1313}
+.btn.gold.sm{box-shadow:none}
+.stage{background:#1F1312;box-shadow:inset 0 0 0 2px #3A2A28}
+.stage.app{background:var(--teal);color:#fff}
+.stage[aria-pressed="true"]{box-shadow:0 0 0 4px var(--marigold)}
+.stage-panel{background:var(--surface);box-shadow:inset 0 0 0 1px var(--line)}
+.stage-panel .who.app{background:var(--teal);color:#fff}
+.hub{background:#1F1312}
+.legend i.app{background:var(--teal)}
+.diff .ic,.dlg-head h3 .ic{background:var(--teal-soft);color:#FF8A92}
+dialog{background:var(--surface);color:var(--ink);box-shadow:0 30px 80px -20px rgba(0,0,0,.8),inset 0 0 0 1px var(--line)}
+.dlg-head{background:var(--surface)}
+dialog::backdrop{background:rgba(8,4,4,.7)}
+.bubble-out{background:#201818}
+.bubble-out textarea{background:#2E1A1A;color:#EAD9DA}
+.op.you{border-color:var(--marigold);box-shadow:0 0 0 3px var(--marigold-soft)}
+.seg button[aria-pressed="true"]{background:var(--sunk);color:var(--ink)}
+.toast{background:var(--paper);color:var(--paper-ink)}
+.status.ok{background:#12261A}
+footer{background:var(--deep)}
+footer .link-btn{color:#FF8A92}
+.link-btn{color:#FF8A92}
+a{color:#FF8A92}
+.helper-steps{background:var(--marigold-soft);border-color:var(--marigold)}
+.inbox{border-color:var(--teal)}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v5.5c0 4.5-3 7.7-7 9.5-4-1.8-7-5-7-9.5V6z"/><path d="M9 12l2.2 2.2L15.5 10"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14a5 5 0 0 1 4.5 5"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M6 3h8l5 5v13H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/></symbol>
+  <symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 4v16M7 20h10M4 8h16M4 8l-2.5 6a3.5 3.5 0 0 0 5 0zM20 8l-2.5 6a3.5 3.5 0 0 0 5 0z"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h4l1.5 4-2 1.5a11 11 0 0 0 6 6l1.5-2 4 1.5v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.7"/><path d="M4 17l5-4.5 4 3 3-2.5 4.5 4"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H10l-4 3.5V16H4z"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l9.5 17h-19z"/><path d="M12 10v4M12 17h0"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-rupee" viewBox="0 0 24 24"><path d="M7 4h11M7 8.5h11M7 4h3.5a4.5 4.5 0 0 1 0 9H7l8 7"/></symbol>
+  <symbol id="i-flip" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5.3L20 9M20 4v5h-5M20 12a8 8 0 0 1-14 5.3L4 15M4 20v-5h5"/></symbol>
+  <symbol id="i-calc" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M8 7h8M8.5 12h1M12 12h0M15 12h.5M8.5 16h1M12 16h0M15 16h.5"/></symbol>
+  <symbol id="i-hands" viewBox="0 0 24 24"><path d="M12 20s-7-4.3-7-9.5A3.8 3.8 0 0 1 12 8.3a3.8 3.8 0 0 1 7 2.2C19 15.7 12 20 12 20z"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 4v16h16"/><path d="M7.5 14.5l3.5-4 3 2.5 4-6"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/></symbol>
+  <symbol id="i-sound" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 3L5 13.5h6L10 21l8-10.5h-6z"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.5 3.5 5.5 3.5 8.5s-1 6-3.5 8.5c-2.5-2.5-3.5-5.5-3.5-8.5s1-6 3.5-8.5z"/></symbol>
+</svg>
+
+<header class="top"><div class="wrap">
+  <a class="logo" href="#top"><span class="mark"><svg class="icon"><use href="#i-shield"/></svg></span>LoanShield</a>
+  <nav class="links" aria-label="Sections">
+    <a href="#start">Start</a><a href="#flip">Flip a threat</a><a href="#new">What’s new</a><a href="#map">Follow the money</a><a href="#system">How it works</a>
+  </nav>
+  <div class="langs" role="group" aria-label="Language"><button type="button" data-lang="en" aria-pressed="true">EN</button><button type="button" data-lang="ta" aria-pressed="false" lang="ta">தமிழ்</button><button type="button" data-lang="hi" aria-pressed="false" lang="hi">हिन्दी</button></div>
+</div></header>
+
+<main>
+<section class="hero" id="top"><div class="wrap">
+  <div>
+    <span class="eyebrow">A new answer to loan-app harassment</span>
+    <h1 data-i18n-html="h1">Their threats are <span class="flipword">your evidence.</span></h1>
+    <p class="lede" data-i18n="lede">Other tools try to block the threats. LoanShield turns each one into a fact for the victim and evidence against the operator.</p>
+    <div class="ctas">
+      <a class="btn gold" href="#start"><svg class="icon"><use href="#i-flip"/></svg><span data-i18n="cta">Get started</span></a>
+      <button class="btn line" type="button" id="hero-listen"><svg class="icon"><use href="#i-sound"/></svg><span data-i18n="listen">Listen</span></button>
+    </div>
+    <div class="trust">
+      <span><svg class="icon"><use href="#i-lock"/></svg>Stays on your phone</span>
+      <span><svg class="icon"><use href="#i-globe"/></svg>English · हिन्दी · தமிழ்</span>
+      <span><svg class="icon"><use href="#i-hands"/></svg>Free, no sign-up</span>
+    </div>
+  </div>
+  <div class="phone" aria-label="Example: three threats from a loan agent flipping into facts">
+    <div class="screen">
+      <div class="chat-top"><span class="av">LG</span><div><b>LoanGully Recovery</b><small>+91 90000 33118</small></div></div>
+      <div class="chat" id="demo-chat">
+        <span class="stamp">Today, 10:42 pm</span>
+        <div class="fcard" data-demo><div class="inner"><div class="face front"><span class="tag">Threat</span>Your morphed photo goes to all your contacts tonight.</div><div class="face back"><span class="tag">Fact</span>A morphed photo is fake, and making it is a crime under the IT Act.</div></div></div>
+        <div class="fcard" data-demo><div class="inner"><div class="face front"><span class="tag">Threat</span>FIR is ready. Police will arrest you tomorrow.</div><div class="face back"><span class="tag">Fact</span>Police don’t arrest anyone over WhatsApp. This threat is itself an offence.</div></div></div>
+        <div class="fcard" data-demo><div class="inner"><div class="face front"><span class="tag">Threat</span>Pay ₹6,200 in 2 hours or else.</div><div class="face back"><span class="tag">Fact</span>The deadline is made up. Save this; it is now evidence #3.</div></div></div>
+      </div>
+      <div class="chat-foot"><svg class="icon"><use href="#i-shield"/></svg>LoanShield is reading along<span class="sh">3 saved</span></div>
+    </div>
+  </div>
+</div></section>
+
+
+<section class="band" id="start"><div class="wrap">
+  <div class="sec-head center">
+    <span class="eyebrow">Start here</span>
+    <h2 data-i18n="startH2">How would you like to do this?</h2>
+  </div>
+  <button type="button" class="leak-strip" id="go-leak"><span class="ic"><svg class="icon"><use href="#i-image"/></svg></span><span><b>Has a photo of you already been shared?</b><small>Urgent help to get it taken down. You never upload the photo.</small></span><span class="go">Get help now →</span></button>
+  <div class="paths">
+    <article class="path diy">
+      <span class="ptag">Do it yourself</span>
+      <span class="pic"><svg class="icon"><use href="#i-phone"/></svg></span>
+      <h3 data-i18n="diyH">I can use my phone</h3>
+      <p data-i18n="diyP">Paste the message, speak it, or upload a screenshot. It takes about a minute.</p>
+      <ul class="ways"><li><svg class="icon"><use href="#i-copy"/></svg>Paste</li><li><svg class="icon"><use href="#i-mic"/></svg>Speak</li><li><svg class="icon"><use href="#i-image"/></svg>Screenshot</li></ul>
+      <button class="btn primary" type="button" id="go-diy"><span data-i18n="diyBtn">Start</span></button>
+    </article>
+    <article class="path assist">
+      <span class="ptag">Get assistance</span>
+      <span class="pic"><svg class="icon"><use href="#i-hands"/></svg></span>
+      <h3 data-i18n="helpH">I need help with this</h3>
+      <p data-i18n="helpP">Pick your language. Everything can be read out loud.</p>
+      <div class="langs big" role="group" aria-label="Language"><button type="button" data-lang="en" aria-pressed="true">English</button><button type="button" data-lang="ta" aria-pressed="false" lang="ta">தமிழ்</button><button type="button" data-lang="hi" aria-pressed="false" lang="hi">हिन्दी</button></div>
+      <div class="help-opts">
+        <button type="button" class="opt" id="go-helper"><svg class="icon"><use href="#i-users"/></svg><span><b data-i18n="withMe">Someone is with me</b><small data-i18n="withMeSub">Big text, 4 simple steps, read aloud</small></span></button>
+        <button type="button" class="opt" id="go-callback"><svg class="icon"><use href="#i-phone"/></svg><span><b data-i18n="callMe">Call me back</b><small data-i18n="callMeSub">A trained volunteer calls you</small></span></button>
+      </div>
+    </article>
+  </div>
+  <div class="no-phone"><span class="ic"><svg class="icon"><use href="#i-users"/></svg></span><p><b>No smartphone at all?</b> Trained student volunteers run weekly help desks at SHG meetings. They do every step for the person.</p></div>
+  <div class="inbox" id="inbox" hidden></div>
+</div></section>
+
+<section class="band alt2" id="flip"><div class="wrap">
+  <div class="sec-head center">
+    <span class="eyebrow">Try it</span>
+    <h2 data-i18n="tryH2">Paste what they sent. Watch it flip.</h2>
+  </div>
+  <div class="tool">
+    <div class="helper-steps" id="helper-steps" hidden>
+      <b><svg class="icon"><use href="#i-hands"/></svg>Helper mode</b>
+      <ol><li>Ask them to show or forward you the message.</li><li>Paste it below and tap <b>Flip it</b>.</li><li>Tap <b>Listen</b> or read each card to them.</li><li>Tap <b>Seal</b>, then help them warn their contacts.</li></ol>
+    </div>
+    <form class="composer" id="flip-form">
+      <label for="msg" class="small muted" style="display:block;margin:0 0 .5rem .2rem;font-weight:700" data-i18n="msgLabel">Their message</label>
+      <textarea id="msg" placeholder="Paste a WhatsApp message or SMS, or write what was said on a call"></textarea>
+      <div class="inputs">
+        <button type="button" class="in-btn" id="mic-btn" aria-pressed="false"><svg class="icon"><use href="#i-mic"/></svg><span data-i18n="speak">Speak it</span></button>
+        <label class="in-btn" for="shot-in"><svg class="icon"><use href="#i-image"/></svg><span data-i18n="shot">Upload a screenshot</span></label>
+        <input type="file" id="shot-in" accept="image/*" hidden>
+        <span class="in-status small muted" id="in-status" aria-live="polite"></span>
+      </div>
+      <div class="row">
+        <div class="examples" aria-label="Examples">
+          <button type="button" data-ex="0"><svg class="icon"><use href="#i-image"/></svg>Photo threat</button>
+          <button type="button" data-ex="1"><svg class="icon"><use href="#i-scale"/></svg>Fake police</button>
+          <button type="button" data-ex="2"><svg class="icon"><use href="#i-clock"/></svg>Late-night call</button>
+        </div>
+        <button class="btn primary" type="submit"><svg class="icon"><use href="#i-flip"/></svg><span data-i18n="flipBtn">Flip it</span></button>
+      </div>
+    </form>
+    <p class="privacy"><svg class="icon"><use href="#i-lock"/></svg><span data-i18n="privacy">Checked on this device. Nothing is sent anywhere unless you choose to share it.</span></p>
+    <div class="result" id="result" aria-live="polite"></div>
+  </div>
+</div></section>
+
+
+
+
+<section class="band" id="new"><div class="wrap">
+  <div class="sec-head center">
+    <span class="eyebrow">What’s new</span>
+    <h2>Three things no existing tool does.</h2>
+  </div>
+  <div class="vs-grid">
+    <div class="vs-row"><span class="num-big">1</span><div class="old"><span class="lbl">Usual approach</span><p>Spam blockers hide the message. The victim is still scared.</p></div><span class="to" aria-hidden="true">→</span><div class="newc"><span class="lbl">LoanShield</span><h3>Flips fear into facts</h3><p>Each threat is answered with what is actually true and the law it breaks.</p></div></div>
+    <div class="vs-row"><span class="num-big">2</span><div class="old"><span class="lbl">Usual approach</span><p>More threats means more fear, and each victim complains alone.</p></div><span class="to" aria-hidden="true">→</span><div class="newc"><span class="lbl">LoanShield</span><h3>Every threat builds the case</h3><p>Messages are sealed as tamper-proof evidence, and contacts are warned first.</p></div></div>
+    <div class="vs-row"><span class="num-big">3</span><div class="old"><span class="lbl">Usual approach</span><p>One app is reported. It comes back next week under a new name.</p></div><span class="to" aria-hidden="true">→</span><div class="newc"><span class="lbl">LoanShield</span><h3>Follows the money</h3><p>Reports that share a UPI ID or number join into one operator, public after 3 people.</p></div></div>
+  </div>
+</div></section>
+
+<section class="band alt2" id="map"><div class="wrap">
+  <div class="map-top">
+    <div class="sec-head" style="margin:0">
+      <span class="eyebrow">Follow the money</span>
+      <h2>One operator, many app names.</h2>
+      <p class="muted small" id="graph-status"></p>
+    </div>
+    <div class="seg" role="group" aria-label="Data shown"><button type="button" data-mode="live" aria-pressed="false">Live</button><button type="button" data-mode="sample" aria-pressed="true">Sample</button></div>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div class="ops" id="ops"></div>
+</div></section>
+
+<section class="band dark" id="system"><div class="wrap">
+  <div class="sec-head center">
+    <span class="eyebrow">The LoanShield system</span>
+    <h2>The app is one part. People do the rest.</h2>
+    <p class="muted">Five stages run in a loop, funded and staffed with cyber-safety NGOs. Tap a stage.</p>
+  </div>
+  <div class="system">
+    <div>
+      <div class="loop" id="loop">
+        <svg class="ring" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="38" fill="none" stroke="rgba(255,255,255,.14)" stroke-width=".6" stroke-dasharray="1.5 1.5"/><path d="M50 12 a38 38 0 0 1 9 1.1" fill="none" stroke="#E63946" stroke-width=".8"/></svg>
+        <div class="hub"><div><b>LoanShield</b><span>Reform decides where Prevent goes next</span></div></div>
+      </div>
+      <div class="legend"><span><i class="app"></i>Carried by the app</span><span><i></i>Carried by people and partners</span></div>
+    </div>
+    <div class="stage-panel" id="stage-panel" aria-live="polite"></div>
+  </div>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <a class="logo" href="#top"><span class="mark"><svg class="icon"><use href="#i-shield"/></svg></span>LoanShield</a>
+  <div class="links2">
+    <button class="link-btn" type="button" data-deck="LoanShield_Final.pdf">Presentation (PDF)</button>
+  </div>
+  <p style="flex-basis:100%">Social &amp; Sustainability project · SDGs 1, 8, 10 and 16 · Karthik J (23BRS1191) · K Annu Prasath (24BCE5409) · Pasunuru Sai Vivek (24BCE1239) · Srinidhi Vishal Chejarla (24BCE1493)</p>
+  <p style="flex-basis:100%;font-size:.8rem">Sample app names, UPI IDs and numbers are fictional. The law mapping is a guide, not legal advice. <span id="val-line"></span></p>
+</div></footer>
+
+<dialog id="dlg-leak" aria-labelledby="l-title">
+  <div class="dlg-head"><h3 id="l-title"><span class="ic"><svg class="icon"><use href="#i-shield"/></svg></span>If a photo of you was shared</h3><button class="x" type="button" data-close aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button></div>
+  <div class="dlg-body">
+    <div class="calm"><b>This photo is fake. Making it is the crime, not being in it.</b><span>You don’t have to look at it again, and you don’t have to do this alone.</span></div>
+    <ol class="leak-steps">
+      <li><span class="n">1</span><div><b>Don’t open it, reply or pay.</b><p>Paying never makes them delete it. It only brings new demands.</p></div></li>
+      <li><span class="n">2</span><div><b>Tell your contacts it’s fake.</b><p>People believe you when they hear it from you first.</p><button class="btn primary sm" type="button" data-open="dlg-shield">Write the warning</button></div></li>
+      <li><span class="n">3</span><div><b>Ask each platform to take it down.</b><p>Platforms must act within <b>2 hours</b> of a complaint about morphed intimate images (IT Rules, as amended in 2026).</p>
+        <div class="fields"><div class="field"><label for="lk-platform">Where is it?</label><select id="lk-platform"><option>Instagram</option><option>Facebook</option><option>X (Twitter)</option><option>YouTube</option><option>Telegram</option><option>Another website</option></select></div><div class="field"><label for="lk-link">Link to the post (optional)</label><input id="lk-link" placeholder="https://"></div></div>
+        <textarea class="out" id="lk-out" readonly style="min-height:150px;font-family:var(--body)"></textarea>
+        <div class="btns"><button class="btn ghost sm" type="button" id="lk-copy"><svg class="icon"><use href="#i-copy"/></svg>Copy request</button></div>
+        <p class="small muted">On WhatsApp nobody can delete it from other phones: report and block the sender, and ask your contacts to delete it and not forward it.</p></div></li>
+      <li><span class="n">4</span><div><b>Stop it being uploaded again.</b><p><a href="https://stopncii.org" target="_blank" rel="noopener">StopNCII.org</a> makes a fingerprint of the image on your own phone. The image never leaves it, and partner platforms block matching copies.</p></div></li>
+      <li><span class="n">5</span><div><b>Let a counsellor do it for you.</b><p>A trained NGO volunteer handles the takedowns, so you never have to see it again. You can ask for a woman volunteer.</p><button class="btn primary sm" type="button" id="lk-call">Call me back</button></div></li>
+    </ol>
+  </div>
+</dialog>
+
+<dialog id="dlg-call" aria-labelledby="c-title">
+  <div class="dlg-head"><h3 id="c-title"><span class="ic"><svg class="icon"><use href="#i-phone"/></svg></span>Ask a volunteer to call you</h3><button class="x" type="button" data-close aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button></div>
+  <div class="dlg-body" id="call-body">
+    <form id="call-form" style="display:grid;gap:1rem">
+      <p class="muted small">A trained volunteer from our partner NGO calls you, in your language, and goes through every step with you. Only the LoanShield volunteer team sees this.</p>
+      <div class="fields">
+        <div class="field"><label for="cb-name">Your first name (optional)</label><input id="cb-name" autocomplete="given-name"></div>
+        <div class="field"><label for="cb-phone">Phone number</label><input id="cb-phone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="10-digit mobile" maxlength="14"></div>
+      </div>
+      <div><p style="font-weight:700;font-size:.86rem;margin-bottom:.4rem">Best time to call</p>
+        <div class="radios" role="radiogroup" aria-label="Best time"><label><input type="radio" name="cb-time" value="Morning" checked><span>Morning</span></label><label><input type="radio" name="cb-time" value="Afternoon"><span>Afternoon</span></label><label><input type="radio" name="cb-time" value="Evening"><span>Evening</span></label></div></div>
+      <label class="check" style="margin:0"><input type="checkbox" id="cb-woman"><span>I’d prefer a woman volunteer</span></label>
+      <p class="small" id="cb-error" style="color:var(--threat)"></p>
+      <div class="btns"><button class="btn primary" type="submit">Request a call</button></div>
+      <p class="small muted">Our volunteers will never ask you for money, an OTP or your bank details.</p>
+    </form>
+  </div>
+</dialog>
+
+<dialog id="dlg-shield" aria-labelledby="sh-title">
+  <div class="dlg-head"><h3 id="sh-title"><span class="ic"><svg class="icon"><use href="#i-users"/></svg></span>Warn your contacts first</h3><button class="x" type="button" data-close aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button></div>
+  <div class="dlg-body">
+    <p class="muted small">Blackmail only works if your family hears it from them first. Send this now.</p>
+    <div class="radios" role="radiogroup" aria-label="Language">
+      <label><input type="radio" name="sh-lang" value="en" checked><span>English</span></label>
+      <label><input type="radio" name="sh-lang" value="hi"><span>हिन्दी</span></label>
+      <label><input type="radio" name="sh-lang" value="ta"><span>தமிழ்</span></label>
+    </div>
+    <div class="field"><label for="sh-name">Sign it as (optional)</label><input id="sh-name" placeholder="Your first name"></div>
+    <div class="bubble-out"><textarea id="sh-out" readonly aria-label="Warning message"></textarea></div>
+    <div class="btns">
+      <a class="btn primary sm" id="sh-wa" target="_blank" rel="noopener" href="#">Open in WhatsApp</a>
+      <button class="btn ghost sm" type="button" id="sh-copy"><svg class="icon"><use href="#i-copy"/></svg>Copy</button>
+      <button class="btn ghost sm" type="button" id="sh-log">I sent it</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="dlg-vault" aria-labelledby="v-title">
+  <div class="dlg-head"><h3 id="v-title"><span class="ic"><svg class="icon"><use href="#i-lock"/></svg></span>My evidence</h3><button class="x" type="button" data-close aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button></div>
+  <div class="dlg-body">
+    <p class="muted small">Each item is sealed with a SHA-256 hash that also covers the one before it. Edit anything later and the chain breaks.</p>
+    <div id="chain-status"></div>
+    <ul class="vault" id="vault-list"></ul>
+    <div class="btns">
+      <button class="btn ghost sm" type="button" id="verify-btn">Check the chain</button>
+      <button class="btn ghost sm" type="button" id="tamper-btn">Show tampering</button>
+      <button class="btn ghost sm" type="button" id="clear-vault">Delete all</button>
+    </div>
+    <div class="confirm" id="clear-confirm" hidden>Delete every saved item from this device? <button class="btn sm primary" type="button" id="clear-yes" style="background:var(--threat)">Delete</button><button class="btn sm ghost" type="button" id="clear-no">Keep</button></div>
+    <form id="note-form" style="display:grid;gap:.5rem;border-top:1px solid var(--line);padding-top:1rem">
+      <label for="note-text" style="font-weight:700">Log a call</label>
+      <textarea id="note-text" class="out" style="min-height:70px;font-family:var(--body)" placeholder="10:40 pm, call from 90000 33118. Said they would send my photo to my family."></textarea>
+      <p class="small" id="note-error" style="color:var(--threat)"></p>
+      <div><button class="btn primary sm" type="submit">Seal it</button></div>
+    </form>
+  </div>
+</dialog>
+
+<dialog id="dlg-packet" aria-labelledby="p-title">
+  <div class="dlg-head"><h3 id="p-title"><span class="ic"><svg class="icon"><use href="#i-doc"/></svg></span>Complaint packet</h3><button class="x" type="button" data-close aria-label="Close"><svg class="icon"><use href="#i-x"/></svg></button></div>
+  <div class="dlg-body">
+    <p class="muted small">For a legal-aid clinic or cybercrime.gov.in: identifiers, laws, linked operator and sealed evidence.</p>
+    <div class="fields">
+      <div class="field"><label for="pk-name">Your name</label><input id="pk-name"></div>
+      <div class="field"><label for="pk-city">City or district</label><input id="pk-city"></div>
+    </div>
+    <div class="field"><label for="pk-summary">What happened (optional)</label><input id="pk-summary"></div>
+    <textarea class="out" id="packet-out" readonly></textarea>
+    <div class="btns">
+      <button class="btn primary sm" type="button" id="packet-copy"><svg class="icon"><use href="#i-copy"/></svg>Copy</button>
+      <button class="btn ghost sm" type="button" id="packet-save"><svg class="icon"><use href="#i-down"/></svg>Save as text file</button>
+    </div>
+  </div>
+</dialog>
+
+<script>/* LoanShield core logic — pure functions shared by the website and the tests.
+   No network calls. Everything runs on the user's own device. */
+(function (root) {
+'use strict';
+
+/* ------------------------------------------------------------------
+   1. LOAN TRUTH CHECK  (Prevent · SDG 1.4)
+   Turns "₹5,000 loan" marketing into the real yearly cost.
+------------------------------------------------------------------ */
+function truthCheck(o) {
+  const promised = +o.promised, received = +o.received, repay = +o.repay, days = +o.days;
+  if (!(promised > 0 && received > 0 && repay > 0 && days > 0)) return { error: 'Fill in all four amounts with numbers above zero.' };
+  if (received > promised) return { error: 'The amount you received can’t be more than the amount promised.' };
+  if (repay < received) return { error: 'The repayment should be at least the amount you received.' };
+  const upfrontCut = promised - received;                 // fees taken before the money reaches you
+  const totalCost = repay - received;                      // everything you pay on top of what you got
+  const periodRate = totalCost / received;
+  const apr = periodRate * (365 / days) * 100;             // simple annualised rate, same basis lenders must show in a KFS
+  const flags = [];
+  if (upfrontCut > 0) flags.push({ id: 'upfront', sev: 2, text: `₹${fmt(upfrontCut)} (${pct(upfrontCut / promised)}) was cut before the money reached you.` });
+  if (days <= 60) flags.push({ id: 'short', sev: 3, text: `Repayment in ${days} days. Google Play does not allow personal-loan apps that demand full repayment in 60 days or less.` });
+  if (apr >= 100) flags.push({ id: 'apr', sev: 3, text: `The real yearly cost is ${fmt(Math.round(apr))}%. The loan costs more than its own amount every year.` });
+  else if (apr >= 36) flags.push({ id: 'apr', sev: 2, text: `The real yearly cost is ${fmt(Math.round(apr))}%. Ask for a Key Fact Statement and compare.` });
+  (o.answers || []).forEach(a => { const r = RED_FLAG_QUESTIONS.find(q => q.id === a); if (r) flags.push({ id: r.id, sev: r.sev, text: r.why }); });
+  const risk = Math.min(100, flags.reduce((s, f) => s + f.sev * 12, 0));
+  const verdict = risk >= 60 ? 'danger' : risk >= 25 ? 'caution' : 'ok';
+  return { upfrontCut, totalCost, apr, perDay: totalCost / days, flags, risk, verdict };
+}
+const RED_FLAG_QUESTIONS = [
+  { id: 'notInDla', sev: 3, q: 'The app is not in RBI’s Digital Lending Apps directory', why: 'Not in RBI’s DLA directory. Since July 2025 RBI lists every app run by a regulated lender. Google Play India also requires a listed app.' },
+  { id: 'apk', sev: 3, q: 'I installed it from a link (WhatsApp, Telegram, SMS), not the Play Store', why: 'Installed from a link. Play Store rules don’t protect you outside the store.' },
+  { id: 'perms', sev: 3, q: 'It asked to read my contacts, photos or files', why: 'Asked for contacts, photos or files. Google Play bans these permissions for personal-loan apps.' },
+  { id: 'noKfs', sev: 2, q: 'I didn’t get a Key Fact Statement showing the APR', why: 'No Key Fact Statement. RBI’s Digital Lending Directions require one, with the APR, before you sign.' },
+  { id: 'noLender', sev: 2, q: 'The app doesn’t name the bank or NBFC behind the loan', why: 'No named bank or NBFC. Legitimate apps must disclose the regulated lender.' }
+];
+
+/* ------------------------------------------------------------------
+   2. THREAT SCANNER  (Protect · SDG 16.3)
+   Weighted lexicon in English + romanised Hindi (Hinglish).
+   Shared-in text only: the app never reads SMS or WhatsApp in the background.
+------------------------------------------------------------------ */
+const LEXICON = [
+  { cat: 'contacts', label: 'Threat to message your contacts', w: 40, terms: ['your contacts','your contact list','all your contacts','contact list','your family','your relatives','your office','your boss','your colleagues','your friends','everyone in your phone','everyone you know','message everyone','send to all','tere contacts','tumhare contacts','sabko bhej','sab ko bhej','sabko bata','ghar walon','gharwalon','gharwalo','rishtedaar','office mein bata','tumhare boss','குடும்ப','உறவினர்','நண்பர்கள்','அலுவலக','எல்லோருக்கும் அனுப்','परिवार','रिश्तेदार','दोस्तों','ऑफिस','सबको भेज'] },
+  { cat: 'image', label: 'Threat to misuse your photos', w: 55, terms: ['morph','morphed','edited photo','nude','obscene','photo viral','viral kar','make viral','leak your photo','photo leak','gandi photo','tumhari photo','your photo will','புகைப்பட','போட்டோ','படத்தை','फोटो','फ़ोटो','तस्वीर','वायरल'] },
+  { cat: 'legal', label: 'Fake legal or police threat', w: 40, terms: ['fir','arrest','warrant','legal notice','court notice','digital arrest','cbi','cyber cell','police case','police complaint','jail','giraftaar','case darj','non-bailable','கைது','போலீஸ்','காவல்','வழக்கு','வாரண்ட்','गिरफ्तार','गिरफ़्तार','पुलिस','वारंट','केस दर्ज','जेल'] },
+  { cat: 'shame', label: 'Name-calling or public shaming', w: 35, terms: ['fraud','fraudster','thief','chor','cheater','defaulter','beggar','bhikari','shameless','besharam','loser','திருடன்','மோசடி','ஏமாற்று','चोर','धोखेबाज़','धोखेबाज','फ्रॉड'] },
+  { cat: 'violence', label: 'Threat of physical harm', w: 60, terms: ['kill you','beat you','break your','maar denge','jaan se','dekh lenge','we know where you live','ghar aa jayenge','come to your house','hurt you','கொன்று','அடிப்போம்','வீட்டுக்கு வருவோம்','मार देंगे','जान से','घर आ जाएंगे'] },
+  { cat: 'urgency', label: 'Pressure to pay right now', w: 10, terms: ['pay now','pay immediately','pay today','final warning','last warning','final notice','within 1 hour','within 2 hours','within 24 hours','abhi pay','turant','last chance','உடனே','இன்றே','இப்போதே','अभी','तुरंत','आज ही'] },
+  { cat: 'fees', label: 'Extra charges', w: 8, terms: ['penalty','late fee','extra charge','processing fee','double the amount','overdue charge'] }
+];
+const LEVELS = [
+  { min: 70, id: 'critical', label: 'Severe harassment' },
+  { min: 40, id: 'high', label: 'Harassment' },
+  { min: 20, id: 'watch', label: 'Pressure, keep watching' },
+  { min: 0, id: 'clear', label: 'Looks like a routine message' }
+];
+function escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+const LEX_RE = LEXICON.map(c => ({ ...c, re: new RegExp('(?:^|[^a-z0-9])(' + c.terms.map(escRe).sort((a, b) => b.length - a.length).join('|') + ')(?=$|[^a-z0-9])', 'gi') }));
+
+function scanMessage(text) {
+  const t = String(text || '');
+  const hits = [];
+  let score = 0;
+  LEX_RE.forEach(c => {
+    c.re.lastIndex = 0;
+    const found = new Set();
+    let m;
+    while ((m = c.re.exec(t)) !== null) { found.add(m[1]); if (c.re.lastIndex === m.index) c.re.lastIndex++; }
+    if (found.size) { hits.push({ cat: c.cat, label: c.label, w: c.w, phrases: [...found] }); score += c.w; }
+  });
+  score = Math.min(100, score);
+  const level = LEVELS.find(l => score >= l.min);
+  return { score, level: level.id, levelLabel: level.label, hits, ids: extractIdentifiers(t), needsSupport: score >= 40 };
+}
+
+/* Identifiers the scammer cannot cheaply change. These, not the app name, link rebrands. */
+function extractIdentifiers(text) {
+  const t = String(text || '');
+  const upi = uniq((t.match(/\b[a-z0-9._-]{2,}@[a-z]{2,}\b(?!\.[a-z])/gi) || []).map(s => s.toLowerCase()));
+  const phones = uniq((t.match(/(?:\+91[\s-]?)?\b[6-9]\d{4}[\s-]?\d{5}\b/g) || []).map(normPhone));
+  const links = uniq((t.match(/\bhttps?:\/\/[^\s<>"]+|\b[\w-]+\.apk\b/gi) || []).map(s => s.toLowerCase().replace(/[).,]+$/, '')));
+  return { upi, phones, links };
+}
+/* Audio/screenshot to info: the key details of a story, for the complaint. */
+function extractFacts(text) {
+  const t = String(text || '');
+  const amounts = uniq((t.match(/(?:₹|rs\.?|inr|rupees?)\s?([\d,]{3,})|([\d,]{3,})\s?(?:rupees|rs\b|ரூபாய்|रुपये)/gi) || []).map(m => +(m.replace(/[^\d]/g, ''))).filter(n => n >= 100 && n < 1e7));
+  const times = callTimes(t).map(x => ({ raw: x.raw, outside: x.outside }));
+  const appM = t.match(/\b([A-Z][A-Za-z]+(?:\s?[A-Z][a-z]+)?)\s+(?:recovery|loan app|app|loans?)\b/);
+  const ids = extractIdentifiers(t);
+  return { amounts, times, app: appM ? appM[1] : '', upi: ids.upi, phones: ids.phones };
+}
+function normPhone(p) { const d = p.replace(/\D/g, ''); return d.slice(-10); }
+
+/* ------------------------------------------------------------------
+   3. TEMPLATE FINGERPRINT  (Detect)
+   Scam call-centres reuse scripts. Same script + different app name = likely same operator.
+------------------------------------------------------------------ */
+function normaliseTemplate(text) {
+  return String(text || '').toLowerCase()
+    .replace(/\b[a-z0-9._-]{2,}@[a-z]{2,}\b/g, ' upi ')
+    .replace(/(?:\+91[\s-]?)?\b[6-9]\d{4}[\s-]?\d{5}\b/g, ' phone ')
+    .replace(/(rs\.?|inr|₹)\s*[\d,]+/g, ' amount ')
+    .replace(/\d+/g, ' n ')
+    .replace(/[^a-z\s]/g, ' ')
+    .split(/\s+/).filter(Boolean);
+}
+function normaliseScript(text) { return normaliseTemplate(text).join(' ').slice(0, 600); }
+function shingles(words, k) { const s = new Set(); for (let i = 0; i + k <= words.length; i++) s.add(words.slice(i, i + k).join(' ')); return s; }
+function templateSimilarity(a, b) {
+  const A = shingles(normaliseTemplate(a), 3), B = shingles(normaliseTemplate(b), 3);
+  if (!A.size || !B.size) return 0;
+  let inter = 0; A.forEach(x => { if (B.has(x)) inter++; });
+  return inter / (A.size + B.size - inter);
+}
+
+/* ------------------------------------------------------------------
+   4. SCAM GRAPH  (Detect + Reform · SDG 16.4)
+   Union-find over reports. Two reports join the same operator when they share
+   a UPI collection ID, a recovery phone number, or a near-identical script.
+   An operator is published only after K distinct reporters, so one angry
+   person can't get a rival listed.
+------------------------------------------------------------------ */
+const PUBLISH_THRESHOLD = 3;
+const TEMPLATE_LINK = 0.5;
+function buildGraph(reports) {
+  const n = reports.length, parent = reports.map((_, i) => i);
+  const find = i => parent[i] === i ? i : (parent[i] = find(parent[i]));
+  const union = (a, b, why) => { const ra = find(a), rb = find(b); if (ra !== rb) parent[rb] = ra; edges.push({ a, b, why }); };
+  const edges = [];
+  const byKey = {};
+  reports.forEach((r, i) => {
+    (r.upi || []).forEach(u => (byKey['upi:' + u] = byKey['upi:' + u] || []).push(i));
+    (r.phones || []).forEach(p => (byKey['phone:' + p] = byKey['phone:' + p] || []).push(i));
+  });
+  Object.entries(byKey).forEach(([k, idx]) => { for (let j = 1; j < idx.length; j++) union(idx[0], idx[j], k.startsWith('upi') ? 'same UPI ID' : 'same phone number'); });
+  for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) {
+    if (reports[i].text && reports[j].text && templateSimilarity(reports[i].text, reports[j].text) >= TEMPLATE_LINK) union(i, j, 'same message script');
+  }
+  const groups = {};
+  reports.forEach((r, i) => { const g = find(i); (groups[g] = groups[g] || []).push(i); });
+  const clusters = Object.values(groups).map((idx, ci) => {
+    const rs = idx.map(i => reports[i]);
+    const reporters = uniq(rs.map(r => r.reporter));
+    const apps = uniq(rs.map(r => r.app).filter(Boolean));
+    const firstSeen = Math.min(...rs.map(r => r.day || 0));
+    return {
+      idx, apps,
+      upi: uniq(rs.flatMap(r => r.upi || [])), phones: uniq(rs.flatMap(r => r.phones || [])),
+      reports: rs.length, reporters: reporters.length,
+      published: reporters.length >= PUBLISH_THRESHOLD,
+      firstSeen,
+      links: edges.filter(e => idx.includes(e.a))
+    };
+  }).sort((a, b) => b.reporters - a.reporters || b.apps.length - a.apps.length);
+  clusters.forEach((c, i) => { c.id = 'OP-' + String(i + 1).padStart(2, '0'); });
+  return { clusters, edges };
+}
+
+/* ------------------------------------------------------------------
+   5. EVIDENCE CHAIN  (Protect + Respond · SDG 16.3)
+   Each entry's SHA-256 covers the previous entry's hash, so editing or deleting
+   any earlier item breaks every hash after it. The Bharatiya Sakshya Adhiniyam
+   Section 63 certificate (Schedule, Part A) asks for a hash of the electronic record.
+------------------------------------------------------------------ */
+const GENESIS = '0'.repeat(64);
+async function sha256Hex(str, subtle) {
+  const s = subtle || (root.crypto && root.crypto.subtle);
+  const buf = await s.digest('SHA-256', new TextEncoder().encode(str));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+function entryPayload(prev, e) { return [prev, e.ts, e.kind, e.text].join('|'); }
+async function appendEntry(chain, e, subtle) {
+  const prev = chain.length ? chain[chain.length - 1].hash : GENESIS;
+  const entry = { ts: e.ts, kind: e.kind, text: e.text, prev };
+  entry.hash = await sha256Hex(entryPayload(prev, entry), subtle);
+  return chain.concat([entry]);
+}
+async function verifyChain(chain, subtle) {
+  let prev = GENESIS;
+  for (let i = 0; i < chain.length; i++) {
+    const e = chain[i];
+    if (e.prev !== prev) return { ok: false, brokenAt: i };
+    const h = await sha256Hex(entryPayload(prev, e), subtle);
+    if (h !== e.hash) return { ok: false, brokenAt: i };
+    prev = e.hash;
+  }
+  return { ok: true, brokenAt: -1 };
+}
+
+/* ------------------------------------------------------------------
+   6. COMPLAINT PACKET  (Respond · SDG 16.3)
+   Builds text the victim files themselves. It never auto-files.
+------------------------------------------------------------------ */
+function buildPacket(o) {
+  const L = [];
+  const line = s => L.push(s);
+  line('LOAN APP HARASSMENT — COMPLAINT PACKET');
+  line('Prepared with LoanShield on ' + o.date + '. Review every line before you file.');
+  line('');
+  line('1. COMPLAINANT');
+  line('Name: ' + (o.name || '[your name]'));
+  line('Phone / email for contact: ' + (o.contact || '[your contact]'));
+  line('City / district: ' + (o.city || '[your city]'));
+  line('');
+  line('2. WHAT HAPPENED');
+  line(o.summary || '[Describe in your own words: when you borrowed, what you received, when the threats began.]');
+  if (o.truth) {
+    line('Loan amount promised: Rs ' + fmt(o.truth.promised) + '. Amount actually received: Rs ' + fmt(o.truth.received) + '.');
+    line('Repayment demanded: Rs ' + fmt(o.truth.repay) + ' in ' + o.truth.days + ' days (effective yearly cost about ' + fmt(Math.round(o.truth.apr)) + '%).');
+  }
+  line('App name(s) used by the lender: ' + ((o.apps && o.apps.length) ? o.apps.join(', ') : '[app name]'));
+  line('');
+  line('3. IDENTIFIERS USED BY THE HARASSERS');
+  line('UPI IDs they asked me to pay: ' + (o.ids.upi.length ? o.ids.upi.join(', ') : 'none recorded'));
+  line('Phone numbers that called or messaged me: ' + (o.ids.phones.length ? o.ids.phones.map(maskPhone).join(', ') : 'none recorded') + ' (full numbers in the evidence below)');
+  line('Links or APK files they sent: ' + (o.ids.links.length ? o.ids.links.join(', ') : 'none recorded'));
+  if ((o.rights || []).length) {
+    line('');
+    line('RULES THAT MAY HAVE BEEN BROKEN (to be confirmed by legal aid or police)');
+    o.rights.forEach(r => line('- ' + r.text));
+  }
+  if (o.cluster) {
+    line('');
+    line('4. LINKED REPORTS');
+    line('These identifiers match community operator ' + o.cluster.id + ': ' + o.cluster.reports + ' reports from ' + o.cluster.reporters + ' people, across ' + o.cluster.apps.length + ' app names (' + o.cluster.apps.join(', ') + ').');
+  }
+  line('');
+  line((o.cluster ? '5' : '4') + '. EVIDENCE (hash-chained, SHA-256)');
+  line('Chain check: ' + (o.chainOk ? 'intact, no entry altered since it was saved.' : 'BROKEN at entry ' + (o.brokenAt + 1) + '. Do not rely on entries from that point.'));
+  (o.evidence || []).forEach((e, i) => {
+    line('[' + (i + 1) + '] ' + new Date(e.ts).toISOString() + ' | ' + e.kind);
+    line('    "' + e.text.replace(/\s+/g, ' ').slice(0, 280) + '"');
+    line('    SHA-256: ' + e.hash);
+  });
+  if (!(o.evidence || []).length) line('No evidence saved yet. Save each threatening message in the evidence vault first.');
+  line('');
+  line('WHERE TO FILE');
+  line('- National Cybercrime Helpline: call 1930, or file at cybercrime.gov.in (category: financial fraud / online harassment).');
+  line('- Report the calls or messages on Chakshu: sancharsaathi.gov.in.');
+  line('- If the lender claimed to be a bank or NBFC, check the RBI DLA directory and tell the RBI.');
+  line('- For a court, ask for a Section 63 certificate (Bharatiya Sakshya Adhiniyam, 2023). It records the hash values listed above.');
+  return L.join('\n');
+}
+
+/* ------------------------------------------------------------------
+   7. RIGHTS MAP  (Respond · SDG 16.3)
+   Each threat type is matched to the rule it appears to break, so the
+   victim and the police see the offence, not just the insult.
+   Shown as "may apply"; legal aid confirms.
+------------------------------------------------------------------ */
+const RIGHTS = {
+  rbi_conduct: { short: 'RBI recovery rules', text: 'RBI rules for recovery agents (12 Aug 2022): no intimidation, threats, anonymous or persistent calls.' },
+  rbi_hours:   { short: 'RBI calling hours',  text: 'RBI rules for recovery agents (12 Aug 2022): no calls before 8 am or after 7 pm.' },
+  bns351:      { short: 'BNS Sec. 351',       text: 'Bharatiya Nyaya Sanhita Sec. 351: criminal intimidation.' },
+  bns308:      { short: 'BNS Sec. 308',       text: 'Bharatiya Nyaya Sanhita Sec. 308: extortion (a threat used to make you pay).' },
+  bns356:      { short: 'BNS Sec. 356',       text: 'Bharatiya Nyaya Sanhita Sec. 356: defamation (calling you a fraud or thief to others).' },
+  it67:        { short: 'IT Act Sec. 67',     text: 'Information Technology Act Sec. 67: sending obscene material electronically.' }
+};
+const CAT_RIGHTS = { contacts: ['rbi_conduct', 'bns351'], image: ['bns351', 'it67'], legal: ['bns351', 'rbi_conduct'], shame: ['bns356'], violence: ['bns351'] };
+const THREAT_CATS = ['contacts', 'image', 'legal', 'shame', 'violence'];
+function rightsFor(scan, text) {
+  const ids = new Set();
+  scan.hits.forEach(h => (CAT_RIGHTS[h.cat] || []).forEach(r => ids.add(r)));
+  const threat = scan.hits.some(h => THREAT_CATS.includes(h.cat) && h.cat !== 'shame');
+  const demand = scan.hits.some(h => h.cat === 'urgency') || scan.ids.upi.length > 0 || /\b(pay|paisa|bhejo|transfer|repay)\b/i.test(text || '');
+  if (threat && demand) ids.add('bns308');
+  callTimes(text).filter(t => t.outside).length && ids.add('rbi_hours');
+  return [...ids].map(id => ({ id, ...RIGHTS[id] }));
+}
+
+/* Times written in a note ("10:40 pm", "22:40", "6 am") checked against RBI's 8 am to 7 pm window. */
+function callTimes(text) {
+  const out = [];
+  const t = String(text || '');
+  const re12 = /\b(\d{1,2})(?:[:.](\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)/gi;
+  let m;
+  while ((m = re12.exec(t)) !== null) {
+    let h = +m[1] % 12; const min = +(m[2] || 0);
+    if (/p/i.test(m[3])) h += 12;
+    if (+m[1] <= 12) out.push({ raw: m[0], minutes: h * 60 + min });
+  }
+  const re24 = /\b([01]?\d|2[0-3]):([0-5]\d)\b(?!\s*(am|pm|a\.m|p\.m))/gi;
+  while ((m = re24.exec(t)) !== null) out.push({ raw: m[0], minutes: +m[1] * 60 + +m[2] });
+  return out.map(x => ({ ...x, outside: x.minutes < 8 * 60 || x.minutes > 19 * 60 }));
+}
+
+/* ------------------------------------------------------------------
+   8. CONTACT SHIELD  (Protect · SDG 10.2)
+   The scammers' strongest weapon is your contact list. Warn your
+   contacts first, so their messages arrive already discredited.
+------------------------------------------------------------------ */
+const SHIELD_TEXT = {
+  en: n => `Important: an illegal loan app is harassing me. They may send you messages or edited (morphed) photos about me, or call me a fraud. All of it is false, and it is a crime. Please don't reply, don't pay anything and don't forward it. Take a screenshot and send it to me so I can add it to my police complaint. Thank you for standing with me.${n ? ' — ' + n : ''}`,
+  hi: n => `ज़रूरी सूचना: एक गैरकानूनी लोन ऐप मुझे परेशान कर रहा है। हो सकता है वे आपको मेरे बारे में संदेश या बदली हुई (मॉर्फ की गई) तस्वीरें भेजें, या मुझे धोखेबाज़ कहें। यह सब झूठ है और अपराध है। कृपया जवाब न दें, कोई पैसा न भेजें और कुछ भी आगे न भेजें। उसका स्क्रीनशॉट लेकर मुझे भेज दें, ताकि मैं उसे पुलिस शिकायत में जोड़ सकूँ।${n ? ' — ' + n : ''}`,
+  ta: n => `முக்கிய அறிவிப்பு: ஒரு சட்டவிரோத கடன் செயலி என்னைத் துன்புறுத்துகிறது. அவர்கள் என்னைப் பற்றி உங்களுக்குச் செய்திகள் அல்லது மாற்றியமைக்கப்பட்ட புகைப்படங்களை அனுப்பலாம், அல்லது நான் மோசடி செய்பவர் என்று சொல்லலாம். இவை அனைத்தும் பொய்; இது ஒரு குற்றம். தயவுசெய்து பதில் அனுப்ப வேண்டாம், பணம் அனுப்ப வேண்டாம், எதையும் பகிர வேண்டாம். அதை ஸ்கிரீன்ஷாட் எடுத்து எனக்கு அனுப்புங்கள்; நான் அதை என் காவல்துறை புகாரில் சேர்க்கிறேன்.${n ? ' — ' + n : ''}`
+};
+function shieldMessage(lang, name) { return (SHIELD_TEXT[lang] || SHIELD_TEXT.en)(String(name || '').trim().slice(0, 60)); }
+
+/* ---------- helpers ---------- */
+function uniq(a) { return [...new Set(a)]; }
+function fmt(n) { return Number(n).toLocaleString('en-IN', { maximumFractionDigits: 0 }); }
+function pct(x) { return Math.round(x * 100) + '%'; }
+function maskPhone(p) { const d = String(p); return d.length === 10 ? d.slice(0, 2) + 'xxxxx' + d.slice(7) : d; }
+
+const API = { extractFacts, normaliseScript, RIGHTS, rightsFor, callTimes, shieldMessage, truthCheck, RED_FLAG_QUESTIONS, LEXICON, scanMessage, extractIdentifiers, templateSimilarity, buildGraph, PUBLISH_THRESHOLD, GENESIS, sha256Hex, appendEntry, verifyChain, buildPacket, fmt, maskPhone };
+if (typeof module !== 'undefined' && module.exports) module.exports = API; else root.LS = API;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>/* LoanShield sample data. All app names, UPI IDs and phone numbers are fictional.
+   The test set was written by the project team to check the scanner's logic.
+   It is not real victim data; field accuracy is measured in the pilot. */
+(function (root) {
+'use strict';
+
+const TEST_SET = [
+  // label 1 = harassment, 0 = not harassment
+  [1, 'Pay now or we will send your morphed photos to all your contacts.'],
+  [1, 'Last warning. Rs 4500 pending. Your family and boss will know you are a fraud by evening.'],
+  [1, 'Legal notice issued. FIR will be filed at cyber cell, arrest warrant tomorrow. Pay within 2 hours.'],
+  [1, 'Tum chor ho. Abhi pay karo warna sabko bhej denge tumhari photo.'],
+  [1, 'We have your contact list. Every number will get a message that you are a thief.'],
+  [1, 'Ghar walon ko bata denge ki tum defaulter ho. Turant paisa bhejo.'],
+  [1, 'Your photo will be made viral on WhatsApp groups if payment not done today.'],
+  [1, 'Digital arrest initiated by CBI. Transfer the dues to recovery.desk@fakebank to stop it.'],
+  [1, 'Pay or we will come to your house. We know where you live.'],
+  [1, 'Your colleagues have been informed that you are a cheater. Next is your office HR.'],
+  [1, 'Final notice: non-bailable warrant will be issued. Call 9000012345 to settle.'],
+  [1, 'Besharam, loan lekar bhaag gaya. Rishtedaar ko call kar rahe hain.'],
+  [1, 'Pay double the amount or we leak your photos. Photo leak to everyone you know.'],
+  [1, 'Jaan se maar denge agar paisa nahi diya.'],
+  [1, 'Your relatives will receive your edited photo tonight.'],
+  [1, 'Police complaint registered against you for loan fraud. Pay penalty immediately.'],
+  [1, 'Sab ko bata denge office mein. Tumhare boss ka number hai humare paas.'],
+  [1, 'You beggar. Pay today or your friends get the screenshots.'],
+  [1, 'We will message everyone in your phone that you ran away with our money.'],
+  [1, 'Court notice has been sent to your address. Jail ho jayegi.'],
+  [1, 'Your nude photos will be sent to your family.'],
+  [1, 'Tumhari photo viral kar denge. Last chance.'],
+  [1, 'Loser. Cannot repay 3000? Everyone you know will hear about it.'],
+  [1, 'We will break your phone and your legs if you ignore this call.'],
+  [1, 'Pay to recovery@fakepay now. Gharwalon ko sab pata chalega.'],
+  [0, 'Dear customer, your EMI of Rs 2,150 is due on 05-Oct. Pay on time to avoid a late fee.'],
+  [0, 'Your OTP for login is 482913. Do not share it with anyone.'],
+  [0, 'Beware of fraud calls. Our bank never asks for your PIN or OTP.'],
+  [0, 'Reminder: your loan instalment is overdue by 3 days. Overdue charge applies. Pay now via the app.'],
+  [0, 'Hi beta, call your relatives in Madurai today, it is Paati’s birthday.'],
+  [0, 'Meeting moved to 4pm. Please inform your boss.'],
+  [0, 'Your order has been shipped and will arrive tomorrow.'],
+  [0, 'Congratulations! You are pre-approved for a credit card. Apply at the branch.'],
+  [0, 'Your electricity bill of Rs 1,240 is due. Pay before the 10th to avoid a penalty.'],
+  [0, 'Police verification for your passport is scheduled on Monday.'],
+  [0, 'Movie tonight? The new thriller has a court scene everyone is talking about.'],
+  [0, 'Your KYC is pending. Update it through the official app or visit the branch.'],
+  [0, 'Sir, the processing fee for your home loan is 0.5%. Documents attached.'],
+  [0, 'Your parcel is held. Pay Rs 25 at http://parcel-help.example to release it.'],
+  [0, 'Thanks for repaying your loan. Your account is now closed.'],
+  [0, 'Mummy, I reached the hostel. Will call later.'],
+  [0, 'Final notice: your gym membership ends today. Renew to keep your slot.'],
+  [0, 'Arrest of the gang that ran fake loan apps was reported in today’s paper.'],
+  [0, 'Your credit score improved by 12 points this month.'],
+  [0, 'Don’t share your photo with unknown apps, beta.'],
+  [0, 'Payment received. Rs 3,000 credited to your loan account.'],
+  [0, 'Office mein party hai Friday ko, aa jana.'],
+  [0, 'We noticed a late payment. You can request a new date in the app at no extra charge.'],
+  [0, 'The cyber cell workshop on online safety is at 11am in the auditorium.'],
+  [0, 'Your SIP of Rs 1,000 was processed successfully.']
+];
+
+/* Community reports feeding the Scam Graph. Days count from the start of the sample period. */
+const SCRIPT_A = 'Dear customer your loan of Rs 4500 is overdue. Pay to recovery.desk@fakebank within 2 hours or we will send a message to all your contacts that you are a fraud.';
+const SCRIPT_B = 'Final warning from legal team. FIR and arrest warrant ready. Call 9000077140 today or police will visit your office.';
+const SAMPLE_REPORTS = [
+  { reporter: 'R1', app: 'InstaCash Pro', day: 2,  upi: ['recovery.desk@fakebank'], phones: ['9000011221'], text: SCRIPT_A },
+  { reporter: 'R2', app: 'PaisaJet',      day: 9,  upi: [], phones: ['9000011221'], text: 'Dear customer your loan of Rs 3000 is overdue. Pay within 2 hours or we will send a message to all your contacts that you are a fraud.' },
+  { reporter: 'R3', app: 'LoanGully',     day: 15, upi: ['collect.lg@fakepay'], phones: [], text: 'Dear customer your loan of Rs 6200 is overdue. Pay to collect.lg@fakepay within 2 hours or we will send a message to all your contacts that you are a fraud.' },
+  { reporter: 'R4', app: 'LoanGully',     day: 21, upi: ['collect.lg@fakepay'], phones: ['9000033118'], text: 'Your photos will be morphed and sent to your family.' },
+  { reporter: 'R5', app: 'QuickMoney Max', day: 5, upi: [], phones: ['9000077140'], text: SCRIPT_B },
+  { reporter: 'R6', app: 'MoneyBolt',     day: 18, upi: ['mb.recover@fakebank'], phones: ['9000077140'], text: 'Pay now. Your boss will get a call.' },
+  { reporter: 'R7', app: 'MoneyBolt',     day: 27, upi: ['mb.recover@fakebank'], phones: [], text: 'Final warning from legal team. FIR and arrest warrant ready. Call 9000077141 today or police will visit your office.' },
+  { reporter: 'R8', app: 'CashNest',      day: 33, upi: ['cn.dues@fakepay'], phones: ['9000098001'], text: 'Pay the penalty today.' }
+];
+
+/* Example a visitor sees pre-filled in the scanner (fictional). */
+const EXAMPLE_MESSAGE = 'LoanGully recovery: Rs 6200 overdue. Pay to collect.lg@fakepay within 2 hours or your morphed photo goes to all your contacts. FIR ready. Call 9000033118.';
+
+const API = { TEST_SET, SAMPLE_REPORTS, EXAMPLE_MESSAGE };
+if (typeof module !== 'undefined' && module.exports) module.exports = API; else root.LSDATA = API;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>(function () {
+'use strict';
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const ico = id => `<svg class="icon" aria-hidden="true"><use href="#${id}"/></svg>`;
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } },
+  del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+};
+const state = {
+  truth: null, flip: null,
+  chain: store.get('loanshield_chain_v2', []),
+  myReports: store.get('loanshield_reports_v2', []),
+  graph: null, mode: 'sample',
+  live: { on: false, db: null, uid: null, canWrite: false, reports: [] },
+  downloads: null, sample: null
+};
+
+let toastEl, toastT;
+function toast(msg) {
+  if (!toastEl) { toastEl = document.createElement('div'); toastEl.className = 'toast'; toastEl.setAttribute('role', 'status'); document.body.appendChild(toastEl); }
+  toastEl.textContent = msg; toastEl.classList.add('show');
+  clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove('show'), 2800);
+}
+
+/* ---------------- Fear → Fact ---------------- */
+const FACTS = {
+  legal:    { who: 'Fake legal threat', head: 'No one can arrest you over a WhatsApp message.', body: 'Police do not send FIRs, warrants or “digital arrest” notices by chat. Not repaying a loan is usually a civil matter, not a crime. Using fake police threats to make you pay is itself an offence.' },
+  image:    { who: 'Photo threat', head: 'A morphed photo is fake, and making it is a crime.', body: 'Editing your photo and sending it to others is punishable under the IT Act. Tell your contacts first. If an image is shared, report it at cybercrime.gov.in.' },
+  contacts: { who: 'Contact threat', head: 'Your contacts owe them nothing, and neither do you to them.', body: 'RBI rules bar recovery agents from harassing your family, friends or workplace. Warn your contacts before they do, and the message loses its power.' },
+  shame:    { who: 'Name-calling', head: 'Being behind on a loan does not make you a fraud.', body: 'Calling you a thief or fraud to other people can be defamation. You have done nothing criminal.' },
+  violence: { who: 'Threat of harm', head: 'This is criminal intimidation. Your safety comes first.', body: 'If you feel unsafe right now, call 112. Then report the number to 1930. Do not meet anyone they send.' },
+  urgency:  { who: 'Pressure', head: 'The deadline is made up to stop you thinking.', body: 'Paying an illegal app usually brings new demands, not peace. Save the message first. You have time to get help.' },
+  fees:     { who: 'Extra charges', head: 'Charges you never agreed to are a warning sign.', body: 'Regulated lenders must show every charge in a Key Fact Statement before you sign. New “penalties” that appear later are how the debt keeps growing.' }
+};
+const ORDER = ['violence', 'image', 'legal', 'contacts', 'shame', 'urgency', 'fees'];
+const EXAMPLES = [
+  LSDATA.EXAMPLE_MESSAGE,
+  'Final notice from Cyber Cell: FIR registered against you for loan fraud. Non-bailable warrant will be issued today. Pay Rs 4800 to recovery.desk@fakebank within 1 hour to cancel. Call 9000012345.',
+  '10:40 pm call from 9000033118. He said tum chor ho, ghar walon ko bata denge, and they will come to your house tomorrow.'
+];
+const RULE_FOR = { legal: ['bns351', 'rbi_conduct'], image: ['it67', 'bns351'], contacts: ['rbi_conduct'], shame: ['bns356'], violence: ['bns351'], urgency: [], fees: [] };
+
+/* ---------------- languages, read-aloud, helper mode ---------------- */
+const T = {
+  en: { h1: 'Their threats are <span class="flipword">your evidence.</span>', lede: 'Other tools try to block the threats. LoanShield turns each one into a fact for the victim and evidence against the operator.', cta: 'Flip a threat', listen: 'Listen', tryH2: 'Paste what they sent. Watch it flip.', msgLabel: 'Their message', flipBtn: 'Flip it', privacy: 'Checked on this device. Nothing is sent anywhere unless you choose to share it.', fact: 'The fact', tap: 'Tap to flip', back: 'Tap to see the threat', flipped: n => `${n} threat${n > 1 ? 's' : ''} flipped`, caseH: 'Your case is building', hero: 'Their threats are your evidence. A morphed photo is fake, and making it is a crime. No one can arrest you over a WhatsApp message.' },
+  ta: { h1: 'அவர்களின் மிரட்டல்களே <span class="flipword">உங்கள் ஆதாரம்.</span>', lede: 'பயமுறுத்தும் ஒவ்வொரு செய்திக்கும் உண்மை என்ன, எந்தச் சட்டம் மீறப்படுகிறது என்று LoanShield சொல்லும். அந்தச் செய்தியே அவர்களுக்கு எதிரான ஆதாரமாகும்.', cta: 'மிரட்டலைச் சரிபார்', listen: 'கேளுங்கள்', tryH2: 'அவர்கள் அனுப்பியதை இங்கே ஒட்டுங்கள்.', msgLabel: 'அவர்கள் அனுப்பிய செய்தி', flipBtn: 'சரிபார்', privacy: 'இது உங்கள் போனிலேயே சரிபார்க்கப்படும். நீங்கள் பகிராமல் எதுவும் வெளியே போகாது.', fact: 'உண்மை', tap: 'திருப்ப தொடவும்', back: 'மிரட்டலைப் பார்க்க தொடவும்', flipped: n => `${n} மிரட்டல்கள் சரிபார்க்கப்பட்டன`, caseH: 'உங்கள் வழக்கு உருவாகிறது', hero: 'அவர்களின் மிரட்டல்களே உங்கள் ஆதாரம். மாற்றப்பட்ட புகைப்படம் போலியானது; அதை உருவாக்குவதே குற்றம். வாட்ஸ்அப் செய்தி மூலம் யாரும் உங்களைக் கைது செய்ய முடியாது.' },
+  hi: { h1: 'उनकी धमकियाँ ही <span class="flipword">आपका सबूत हैं।</span>', lede: 'LoanShield हर डरावने मैसेज का सच बताता है, कौन-सा कानून टूटा है, और उसी मैसेज को उनके ख़िलाफ़ सबूत बना देता है।', cta: 'धमकी जाँचें', listen: 'सुनें', tryH2: 'उन्होंने जो भेजा, यहाँ चिपकाएँ।', msgLabel: 'उनका मैसेज', flipBtn: 'जाँचें', privacy: 'यह आपके फ़ोन पर ही जाँचा जाता है। आपकी मर्ज़ी के बिना कुछ भी बाहर नहीं जाता।', fact: 'सच', tap: 'पलटने के लिए छुएँ', back: 'धमकी देखने के लिए छुएँ', flipped: n => `${n} धमकियाँ जाँची गईं`, caseH: 'आपका केस बन रहा है', hero: 'उनकी धमकियाँ ही आपका सबूत हैं। बदली हुई फ़ोटो नकली है, और उसे बनाना अपराध है। WhatsApp मैसेज से कोई आपको गिरफ़्तार नहीं कर सकता।' }
+};
+const FACTS_L = {
+  ta: {
+    legal: ['போலி சட்ட மிரட்டல்', 'வாட்ஸ்அப் செய்தி மூலம் யாரும் உங்களைக் கைது செய்ய முடியாது.', 'காவல்துறை FIR அல்லது வாரண்டை சாட்டில் அனுப்பாது. கடனைத் திருப்பிச் செலுத்தாதது பொதுவாகக் குற்றம் அல்ல. இப்படிப் போலியாக மிரட்டுவதே குற்றம்.'],
+    image: ['புகைப்பட மிரட்டல்', 'மாற்றப்பட்ட புகைப்படம் போலியானது; அதை உருவாக்குவதே குற்றம்.', 'உங்கள் தொடர்புகளிடம் முதலில் நீங்களே சொல்லுங்கள். அப்போது அவர்களின் மிரட்டல் பலனளிக்காது.'],
+    contacts: ['தொடர்புகளுக்கு மிரட்டல்', 'உங்கள் குடும்பத்தையும் நண்பர்களையும் தொந்தரவு செய்ய அவர்களுக்கு உரிமை இல்லை.', 'அவர்கள் அனுப்பும் முன் உங்கள் தொடர்புகளுக்கு எச்சரிக்கை அனுப்புங்கள்.'],
+    shame: ['அவமானப்படுத்துதல்', 'கடன் தாமதமானால் நீங்கள் மோசடிக்காரர் அல்ல.', 'உங்களை மற்றவர்களிடம் திருடன் என்று சொல்வது அவதூறு ஆகலாம். நீங்கள் எந்தக் குற்றமும் செய்யவில்லை.'],
+    violence: ['உடல் தீங்கு மிரட்டல்', 'இது குற்றவியல் மிரட்டல். உங்கள் பாதுகாப்பே முதலில்.', 'இப்போது ஆபத்து என்றால் 112-ஐ அழையுங்கள். அவர்கள் அனுப்பும் யாரையும் சந்திக்க வேண்டாம்.'],
+    urgency: ['அழுத்தம்', 'இந்தக் கெடு உங்களைப் பயமுறுத்தவே.', 'பணம் கட்டினால் இன்னும் அதிகக் கோரிக்கைகள் வரும். முதலில் இந்தச் செய்தியைச் சேமியுங்கள்.'],
+    fees: ['கூடுதல் கட்டணம்', 'நீங்கள் ஒப்புக்கொள்ளாத கட்டணங்கள் எச்சரிக்கை அறிகுறி.', 'முறையான கடன் நிறுவனங்கள் எல்லாக் கட்டணங்களையும் கையெழுத்துக்கு முன்பே காட்ட வேண்டும்.'],
+    time: ['அழைப்பு நேரம்', 'இந்த நேரத்தில் வசூல் அழைப்புகள் அனுமதிக்கப்படவில்லை.', 'காலை 8 மணி முதல் இரவு 7 மணி வரை மட்டுமே அழைக்கலாம். ஒவ்வொரு இரவு அழைப்பையும் குறித்து வையுங்கள்.']
+  },
+  hi: {
+    legal: ['नकली कानूनी धमकी', 'WhatsApp मैसेज से कोई आपको गिरफ़्तार नहीं कर सकता।', 'पुलिस FIR या वारंट चैट पर नहीं भेजती। लोन न चुका पाना आम तौर पर अपराध नहीं है। ऐसी नकली धमकी देना खुद अपराध है।'],
+    image: ['फ़ोटो की धमकी', 'बदली हुई (मॉर्फ़) फ़ोटो नकली है, और उसे बनाना अपराध है।', 'अपने संपर्कों को पहले खुद बता दें। फिर उनकी धमकी बेअसर हो जाएगी।'],
+    contacts: ['संपर्कों को धमकी', 'आपके परिवार और दोस्तों को परेशान करने का उन्हें कोई हक़ नहीं।', 'उनके भेजने से पहले अपने संपर्कों को चेतावनी भेज दें।'],
+    shame: ['गाली और बदनामी', 'लोन में देरी से आप धोखेबाज़ नहीं बन जाते।', 'दूसरों से आपको चोर कहना मानहानि हो सकता है। आपने कोई अपराध नहीं किया।'],
+    violence: ['हिंसा की धमकी', 'यह आपराधिक धमकी है। आपकी सुरक्षा सबसे पहले।', 'अभी ख़तरा लगे तो 112 पर कॉल करें। उनके भेजे किसी से न मिलें।'],
+    urgency: ['दबाव', 'यह समय-सीमा सिर्फ़ डराने के लिए है।', 'पैसे देने से और माँगें आती हैं। पहले यह मैसेज सेव करें।'],
+    fees: ['अतिरिक्त शुल्क', 'जिन शुल्कों पर आपने सहमति नहीं दी, वे ख़तरे का संकेत हैं।', 'सही लोन कंपनियाँ सभी शुल्क साइन करने से पहले दिखाती हैं।'],
+    time: ['कॉल का समय', 'इस समय वसूली कॉल की अनुमति नहीं है।', 'सिर्फ़ सुबह 8 से शाम 7 बजे तक कॉल की जा सकती है। हर देर रात की कॉल नोट करें।']
+  }
+};
+FACTS.time = { who: 'Call time', head: 'Recovery calls at this hour are not allowed.', body: 'RBI rules allow recovery calls only between 8 am and 7 pm. Log every late call.' };
+function factFor(cat) { const l = FACTS_L[state.lang]; if (l && l[cat]) return { who: l[cat][0], head: l[cat][1], body: l[cat][2] }; return FACTS[cat]; }
+const tr = k => (T[state.lang] || T.en)[k];
+state.lang = store.get('loanshield_lang', 'en');
+function applyLang(l) {
+  state.lang = T[l] ? l : 'en'; store.set('loanshield_lang', state.lang);
+  document.documentElement.lang = state.lang;
+  $$('[data-i18n]').forEach(e => { e.textContent = tr(e.dataset.i18n); });
+  $$('[data-i18n-html]').forEach(e => { e.innerHTML = tr(e.dataset.i18nHtml); });
+  $$('[data-lang]').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === state.lang));
+  if (state.flip) flip(state.flip.text);
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-lang]'); if (b) applyLang(b.dataset.lang); });
+
+const VOICE = { en: 'en-IN', ta: 'ta-IN', hi: 'hi-IN' };
+function speak(text) {
+  if (!('speechSynthesis' in window)) { toast('This phone can’t read aloud. A helper can read the cards instead.'); return; }
+  const synth = window.speechSynthesis; synth.cancel();
+  const u = new SpeechSynthesisUtterance(text); u.lang = VOICE[state.lang]; u.rate = .92;
+  const vs = synth.getVoices(), v = vs.find(x => x.lang && x.lang.toLowerCase().startsWith(state.lang));
+  if (v) u.voice = v; else if (vs.length && state.lang !== 'en') toast('No ' + (state.lang === 'ta' ? 'Tamil' : 'Hindi') + ' voice on this phone. Install one in phone settings, or ask a helper.');
+  synth.speak(u);
+}
+function speakFacts() {
+  if (!state.flip) return speak(tr('hero'));
+  const cats = state.flip.scan.hits.map(h => h.cat).filter(c => FACTS[c]);
+  if (state.flip.late.length) cats.push('time');
+  speak(cats.map(c => { const f = factFor(c); return f.head + ' ' + f.body; }).join(' '));
+}
+$('#hero-listen').addEventListener('click', () => speak(tr('hero')));
+function setHelper(on) {
+  document.documentElement.classList.toggle('helper', on); $('#helper-steps').hidden = !on;
+}
+$('#go-diy').addEventListener('click', () => { setHelper(false); $('#flip').scrollIntoView({ behavior: 'smooth' }); setTimeout(() => $('#msg').focus({ preventScroll: true }), 500); });
+$('#go-helper').addEventListener('click', () => { setHelper(true); $('#flip').scrollIntoView({ behavior: 'smooth' }); toast('Helper mode on: bigger text and simple steps'); });
+$('#go-callback').addEventListener('click', () => { state.callReason = 'threats'; openDlg('dlg-call'); });
+function leakText() {
+  const pf = $('#lk-platform').value, link = $('#lk-link').value.trim();
+  return `To: ${pf} Grievance Officer\nSubject: Urgent removal: morphed intimate image of me, shared without consent\n\nI am the person shown in ${link ? 'this post: ' + link : 'an image posted on your platform'}. The image is fake (morphed) and was shared without my consent by people harassing me over an illegal loan app.\n\nUnder Rule 3(2)(b) of the IT Rules, 2021 (as amended), please remove it, and block copies of it, within the time the rules require. I can confirm my identity on request.\n\nDate: ${new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}`;
+}
+function renderLeak() { $('#lk-out').value = leakText(); }
+$('#lk-platform').addEventListener('change', renderLeak); $('#lk-link').addEventListener('input', renderLeak);
+$('#lk-copy').addEventListener('click', () => copyText(leakText(), $('#lk-out'), 'Request copied. Paste it into the platform’s report form.'));
+$('#go-leak').addEventListener('click', () => { renderLeak(); openDlg('dlg-leak'); });
+$('#lk-call').addEventListener('click', () => { state.callReason = 'photo'; $('#dlg-leak').close(); $('#cb-woman').checked = true; openDlg('dlg-call'); });
+$('#call-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const phone = $('#cb-phone').value.replace(/\D/g, '').slice(-10);
+  if (!/^[6-9]\d{9}$/.test(phone)) { $('#cb-error').textContent = 'Enter a 10-digit mobile number, like 98765 43210.'; return; }
+  $('#cb-error').textContent = '';
+  const when = $('input[name=cb-time]:checked').value, langName = { en: 'English', ta: 'Tamil', hi: 'Hindi' }[state.lang];
+  let saved = false;
+  if (state.live.db && state.live.uid) {
+    try { await state.live.db.doc('callbacks/' + state.live.uid).set({ name: $('#cb-name').value.trim().slice(0, 40), phone, lang: state.lang, when, woman: $('#cb-woman').checked, reason: state.callReason || 'threats', ts: Date.now() }); saved = true; } catch (x) { saved = false; }
+  }
+  $('#call-body').innerHTML = saved
+    ? `<div class="sent"><span class="big">${ico('i-check')}</span><h3>Request sent</h3><p>A volunteer will call <b>${esc(LS.maskPhone(phone))}</b> in the ${esc(when.toLowerCase())}, in ${esc(langName)}. Meanwhile, don’t pay and don’t reply to them.</p><p class="small muted">They will never ask you for money, an OTP or bank details.</p><button class="btn ghost sm" type="button" data-close>Close</button></div>`
+    : `<div class="sent"><span class="big">${ico('i-phone')}</span><h3>Call-backs run on the pilot link</h3><p>This copy of the site can’t send requests yet. Until then, visit the weekly help desk at your SHG meeting, or ask someone you trust to sit with you and choose <b>Someone is with me</b>.</p><button class="btn ghost sm" type="button" data-close>Close</button></div>`;
+});
+async function startInbox(user) {
+  try { if (!user || !(await user.isOwner())) return; } catch (e) { return; }
+  const box = $('#inbox'); box.hidden = false;
+  state.live.db.collection('callbacks').onSnapshot(snap => {
+    const rows = snap.docs.map(d => d.data() || {}).sort((x, y) => (y.ts || 0) - (x.ts || 0));
+    box.innerHTML = `<h3><span>Volunteer inbox (only you see this)</span><span class="muted small">${rows.length} request${rows.length === 1 ? '' : 's'}</span></h3>` +
+      (rows.length ? `<ul>${rows.map(r => `<li><b>${esc(r.name || 'No name')}</b><span>${esc(String(r.phone || ''))}</span><span>${esc({ en: 'English', ta: 'Tamil', hi: 'Hindi' }[r.lang] || '')}</span><span>${esc(r.when || '')}</span>${r.woman ? '<span>Woman volunteer</span>' : ''}${r.reason === 'photo' ? '<b style="color:var(--threat)">Leaked photo</b>' : ''}<span class="muted">${r.ts ? esc(new Date(r.ts).toLocaleString('en-IN')) : ''}</span></li>`).join('')}</ul>` : '<p class="small muted" style="margin-top:.4rem">No call-back requests yet.</p>');
+  }, () => { box.hidden = true; });
+}
+
+/* ---------------- voice & screenshot to info, one tap ---------------- */
+Object.assign(T.en, { startH2: 'How would you like to do this?', diyH: 'I can use my phone', diyP: 'Paste the message, speak it, or upload a screenshot. It takes about a minute.', diyBtn: 'Start', helpH: 'I need help with this', helpP: 'Pick your language. Everything can be read out loud.', withMe: 'Someone is with me', withMeSub: 'Big text, 4 simple steps, read aloud', callMe: 'Call me back', callMeSub: 'A trained volunteer calls you', cta: 'Get started' });
+Object.assign(T.ta, { startH2: 'இதை எப்படிச் செய்ய விரும்புகிறீர்கள்?', diyH: 'நானே போனில் செய்வேன்', diyP: 'செய்தியை ஒட்டுங்கள், பேசுங்கள், அல்லது ஸ்கிரீன்ஷாட் பதிவேற்றுங்கள். ஒரு நிமிடம் போதும்.', diyBtn: 'தொடங்கு', helpH: 'எனக்கு உதவி வேண்டும்', helpP: 'உங்கள் மொழியைத் தேர்ந்தெடுங்கள். எல்லாவற்றையும் சத்தமாகப் படிக்கலாம்.', withMe: 'என்னுடன் ஒருவர் இருக்கிறார்', withMeSub: 'பெரிய எழுத்து, 4 எளிய படிகள்', callMe: 'என்னை அழையுங்கள்', callMeSub: 'பயிற்சி பெற்ற தன்னார்வலர் அழைப்பார்', cta: 'தொடங்குங்கள்' });
+Object.assign(T.hi, { startH2: 'आप यह कैसे करना चाहेंगे?', diyH: 'मैं फ़ोन चला सकता/सकती हूँ', diyP: 'मैसेज चिपकाएँ, बोलकर बताएँ, या स्क्रीनशॉट डालें। लगभग एक मिनट लगता है।', diyBtn: 'शुरू करें', helpH: 'मुझे मदद चाहिए', helpP: 'अपनी भाषा चुनें। सब कुछ पढ़कर सुनाया जा सकता है।', withMe: 'कोई मेरे साथ है', withMeSub: 'बड़े अक्षर, 4 आसान कदम', callMe: 'मुझे कॉल करें', callMeSub: 'प्रशिक्षित वॉलंटियर कॉल करेगा', cta: 'शुरू करें' });
+Object.assign(T.en, { speak: 'Speak it', shot: 'Upload a screenshot', understood: 'We understood', oneTap: 'Protect me in one tap', oneTapSub: 'Seals this message as evidence, adds their UPI ID and number to the operator map, and writes your contact warning and complaint.', protect: 'Protect me', doneH: 'Done. Now, in the next hour:', st1: 'Don’t pay and don’t reply. Paying brings new demands.', st2: 'Send the warning to your contacts before they do.', st3: 'Take the complaint to a legal-aid clinic or an NGO helpdesk.', wa: 'Send on WhatsApp', copy: 'Copy complaint', listening: 'Listening… speak now', reading: 'Reading the screenshot…' });
+Object.assign(T.ta, { speak: 'பேசுங்கள்', shot: 'ஸ்கிரீன்ஷாட்', understood: 'நாங்கள் புரிந்தது', oneTap: 'ஒரே தொடுதலில் பாதுகாப்பு', oneTapSub: 'இந்தச் செய்தியை ஆதாரமாகச் சேமித்து, உங்கள் தொடர்புகளுக்கான எச்சரிக்கையையும் புகாரையும் தயார் செய்யும்.', protect: 'என்னைப் பாதுகா', doneH: 'முடிந்தது. அடுத்த ஒரு மணி நேரத்தில்:', st1: 'பணம் கட்ட வேண்டாம், பதில் அனுப்ப வேண்டாம்.', st2: 'அவர்கள் அனுப்பும் முன் உங்கள் தொடர்புகளுக்கு எச்சரிக்கை அனுப்புங்கள்.', st3: 'புகாரை சட்ட உதவி மையம் அல்லது NGO உதவி மையத்திடம் கொண்டு செல்லுங்கள்.', wa: 'வாட்ஸ்அப்பில் அனுப்பு', copy: 'புகாரை நகலெடு', listening: 'கேட்கிறது… இப்போது பேசுங்கள்', reading: 'ஸ்கிரீன்ஷாட்டைப் படிக்கிறது…' });
+Object.assign(T.hi, { speak: 'बोलकर बताएँ', shot: 'स्क्रीनशॉट', understood: 'हमने समझा', oneTap: 'एक टैप में सुरक्षा', oneTapSub: 'यह मैसेज सबूत के रूप में सेव करता है, और आपके संपर्कों के लिए चेतावनी और शिकायत तैयार करता है।', protect: 'मुझे बचाएँ', doneH: 'हो गया। अब अगले एक घंटे में:', st1: 'पैसे न दें और जवाब न दें।', st2: 'उनसे पहले अपने संपर्कों को चेतावनी भेजें।', st3: 'शिकायत लीगल-एड क्लिनिक या NGO हेल्पडेस्क ले जाएँ।', wa: 'WhatsApp पर भेजें', copy: 'शिकायत कॉपी करें', listening: 'सुन रहा है… अब बोलिए', reading: 'स्क्रीनशॉट पढ़ रहा है…' });
+
+function understoodHtml(text) {
+  const f = LS.extractFacts(text), chips = [];
+  if (f.app) chips.push(`<span class="chip"><i>App</i>${esc(f.app)}</span>`);
+  f.amounts.forEach(a => chips.push(`<span class="chip"><i>Amount</i>₹${LS.fmt(a)}</span>`));
+  f.upi.forEach(u => chips.push(`<span class="chip"><i>UPI</i>${esc(u)}</span>`));
+  f.phones.forEach(p => chips.push(`<span class="chip"><i>Phone</i>${esc(LS.maskPhone(p))}</span>`));
+  f.times.forEach(t => chips.push(`<span class="chip ${t.outside ? 'warn' : ''}"><i>Time</i>${esc(t.raw)}${t.outside ? ' · after 7 pm' : ''}</span>`));
+  return chips.length ? `<div class="understood rise"><span class="lbl">${esc(tr('understood'))}</span>${chips.join('')}</div>` : '';
+}
+function oneTapHtml() {
+  const done = state.oneTapDone === (state.flip && state.flip.text);
+  if (!done) return `<div class="onetap rise" id="onetap"><div><h3>${ico('i-bolt')}${esc(tr('oneTap'))}</h3><p>${esc(tr('oneTapSub'))}</p></div><button class="btn gold" type="button" id="protect-btn">${ico('i-shield')}${esc(tr('protect'))}</button></div>`;
+  return `<div class="onetap rise" id="onetap"><h3>${ico('i-check')}${esc(tr('doneH'))}</h3>
+    <div class="hour"><div><b>1</b><p>${esc(tr('st1'))}</p></div>
+    <div><b>2</b><p>${esc(tr('st2'))}</p><a class="btn gold sm" id="ot-wa" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(shieldText())}">${esc(tr('wa'))}</a></div>
+    <div><b>3</b><p>${esc(tr('st3'))}</p><button class="btn line sm" type="button" id="ot-copy">${ico('i-copy')}${esc(tr('copy'))}</button></div></div></div>`;
+}
+function wireOneTap() {
+  const b = $('#protect-btn'); if (b) b.addEventListener('click', protectAll);
+  const w = $('#ot-wa'); if (w) w.addEventListener('click', () => { shieldSent(); });
+  const c = $('#ot-copy'); if (c) c.addEventListener('click', async () => { await refreshPacket(); copyText($('#packet-out').value, $('#packet-out'), 'Complaint copied'); });
+}
+async function protectAll() {
+  const f = state.flip; if (!f) return;
+  const b = $('#protect-btn'); if (b) b.disabled = true;
+  if (!state.chain.some(e => e.text === f.text)) await addToVault('message', f.text);
+  const ids = f.scan.ids;
+  if (ids.upi.length + ids.phones.length && !state.myReports.some(r => r.text === f.text)) await reportFlip();
+  await refreshPacket();
+  state.oneTapDone = f.text;
+  $('#onetap').outerHTML = oneTapHtml(); wireOneTap(); renderCase();
+  toast('Sealed, linked and ready');
+}
+
+/* voice: the phone's own speech-to-text, in the chosen language */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null;
+$('#mic-btn').addEventListener('click', () => {
+  const btn = $('#mic-btn'), st = $('#in-status');
+  if (rec) { rec.stop(); return; }
+  if (!SR) { toast('Voice typing needs Chrome on Android or desktop. You can also use the microphone on your keyboard.'); $('#msg').focus(); return; }
+  rec = new SR(); rec.lang = VOICE[state.lang]; rec.interimResults = true; rec.continuous = true;
+  const base = $('#msg').value.trim() && !EXAMPLES.includes($('#msg').value.trim()) ? $('#msg').value.trim() + ' ' : '';
+  let finalText = '';
+  rec.onresult = e => { let interim = ''; for (let i = e.resultIndex; i < e.results.length; i++) { const r = e.results[i]; if (r.isFinal) finalText += r[0].transcript + ' '; else interim += r[0].transcript; } $('#msg').value = base + finalText + interim; };
+  rec.onerror = e => { toast(e.error === 'not-allowed' || e.error === 'service-not-allowed' ? 'The microphone is blocked here. Open the public link, or use the microphone on your keyboard.' : 'Couldn’t hear that. Try again.'); };
+  rec.onend = () => { rec = null; btn.setAttribute('aria-pressed', 'false'); st.textContent = ''; if ($('#msg').value.trim()) flip($('#msg').value, { scroll: true }); };
+  try { $('#msg').value = base; rec.start(); btn.setAttribute('aria-pressed', 'true'); st.textContent = tr('listening'); } catch (e) { rec = null; toast('Couldn’t start the microphone.'); }
+});
+
+/* screenshot: Claude reads the image (Claude link only) */
+async function shrink(file) {
+  try {
+    const bmp = await createImageBitmap(file), k = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
+    const c = document.createElement('canvas'); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+    c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+    return await new Promise(r => c.toBlob(r, 'image/jpeg', .85));
+  } catch (e) { return file; }
+}
+$('#shot-in').addEventListener('change', async e => {
+  const file = e.target.files && e.target.files[0]; e.target.value = ''; if (!file) return;
+  const st = $('#in-status');
+  let ok = false; try { ok = !!(state.sample && (await state.sample.limits()).images); } catch (x) {}
+  if (!ok) { toast('Reading screenshots works on the Claude link. Here, type or speak the message.'); return; }
+  st.textContent = tr('reading');
+  try {
+    const img = await shrink(file);
+    const a = await state.sample.json('This is a screenshot a victim of an illegal Indian loan app received (WhatsApp, SMS or call log). Copy out every message from the lender or recovery agent exactly as written, in its original language, including amounts, UPI IDs, phone numbers and times. Ignore phone UI chrome. Reply with JSON only: {"text": "<the messages, one per line>", "found": true|false}.', { images: [img], modelTier: 'quick' });
+    if (!a || !a.found || !a.text) { toast('No message found in that image. Try a clearer screenshot.'); return; }
+    $('#msg').value = String(a.text).slice(0, 3000); flip($('#msg').value, { scroll: true });
+  } catch (x) { toast(x && x.code === 'rate_limited' ? 'Too many requests. Try again in a minute.' : 'Couldn’t read the screenshot. Type or speak the message instead.'); }
+  finally { st.textContent = ''; }
+});
+
+function quote(text, phrase) {
+  const t = text.replace(/\s+/g, ' ');
+  const i = t.toLowerCase().indexOf(phrase.toLowerCase());
+  if (i < 0) return esc(phrase);
+  let a = Math.max(0, t.lastIndexOf(' ', Math.max(0, i - 28))), b = t.indexOf(' ', Math.min(t.length, i + phrase.length + 28));
+  if (b < 0) b = t.length;
+  const s = t.slice(a, b).trim();
+  const re = new RegExp('(' + phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'i');
+  return (a > 0 ? '…' : '') + s.split(re).map((p, k) => k % 2 ? `<mark>${esc(p)}</mark>` : esc(p)).join('') + (b < t.length ? '…' : '');
+}
+
+const ICON = { legal: 'i-scale', image: 'i-image', contacts: 'i-users', shame: 'i-chat', violence: 'i-alert', urgency: 'i-clock', fees: 'i-rupee', time: 'i-clock' };
+function card(kind, icon, quoteHtml, head, body, laws) {
+  return `<button type="button" class="fcard" aria-label="${esc(kind)}: show the fact"><span class="inner">
+    <span class="face front"><span class="kind"><span class="ic">${ico(icon)}</span>${esc(kind)}</span><q>${quoteHtml}</q><span class="turn">${ico('i-flip')}${tr('tap')}</span></span>
+    <span class="face back"><span class="kind"><span class="ic">${ico('i-check')}</span>${tr('fact')}</span><b>${esc(head)}</b><p>${esc(body)}</p>${laws.length ? `<span class="laws">${laws.map(l => `<span class="law">${esc(l)}</span>`).join('')}</span>` : ''}<span class="turn">${ico('i-flip')}${tr('back')}</span></span>
+  </span></button>`;
+}
+function flip(text, opts) {
+  text = text.trim();
+  const box = $('#result');
+  if (!text) { box.innerHTML = ''; state.flip = null; return; }
+  const scan = LS.scanMessage(text);
+  const rights = LS.rightsFor(scan, text);
+  const late = LS.callTimes(text).filter(t => t.outside);
+  state.flip = { text, scan, rights, late };
+  const hits = scan.hits.slice().sort((a, b) => ORDER.indexOf(a.cat) - ORDER.indexOf(b.cat));
+  const cards = hits.filter(h => FACTS[h.cat]).map(h => {
+    const f = factFor(h.cat);
+    const laws = (RULE_FOR[h.cat] || []).map(id => LS.RIGHTS[id].short);
+    if ((h.cat === 'urgency' || h.cat === 'contacts') && rights.some(r => r.id === 'bns308')) laws.push(LS.RIGHTS.bns308.short);
+    return card(f.who, ICON[h.cat], quote(text, h.phrases[0]), f.head, f.body, [...new Set(laws)]);
+  });
+  late.forEach(t => { const f = factFor('time'); cards.push(card(f.who, 'i-clock', `<mark>${esc(t.raw)}</mark>`, f.head, f.body, ['RBI calling hours'])); });
+  const n = cards.length;
+  box.innerHTML = `
+    <div class="verdict rise"><span class="pill ${scan.level}">${esc(scan.levelLabel)}</span>
+      <div class="meter" aria-label="Threat score ${scan.score} out of 100"><span class="small muted">Calm</span><span class="track"><i style="left:${Math.max(4, Math.min(96, scan.score))}%"></i></span><span class="small muted">Severe</span></div>
+      ${n ? `<span class="hint">${ico('i-flip')}${tr('flipped')(n)}</span><button class="btn primary sm listen-btn" type="button" id="listen-facts">${ico('i-sound')}${tr('listen')}</button>` : ''}</div>
+    ${understoodHtml(text)}
+    ${n ? `<div class="cards">${cards.join('')}</div>` : `<div class="none rise"><b>No threat words found.</b> <span class="muted">If it still frightened you, seal it anyway. The word list can miss new wording${state.sample ? ', so try the AI reading below' : ''}.</span></div>`}
+    ${scan.needsSupport ? `<div class="support rise"><span>You don’t have to pay to make this stop.</span><span class="n"><b>1930</b>cybercrime</span><span class="n"><b>14416</b>Tele-MANAS</span>${hits.some(h => h.cat === 'violence') ? '<span class="n"><b>112</b>danger</span>' : ''}</div>` : ''}
+    ${oneTapHtml()}
+    <div class="case rise" id="case"></div>
+    ${state.sample ? `<div class="ai" id="ai-box"><button class="link-btn" type="button" id="ai-btn">Not sure? Ask AI to read it, in any language</button></div>` : ''}`;
+  $$('#result .fcard').forEach((c, i) => {
+    c.addEventListener('click', () => c.classList.toggle('flipped'));
+    setTimeout(() => c.classList.add('flipped'), 650 + i * 350);
+  });
+  renderCase();
+  const ai = $('#ai-btn'); if (ai) ai.addEventListener('click', () => askAI(text));
+  const lf = $('#listen-facts'); if (lf) lf.addEventListener('click', speakFacts);
+  wireOneTap();
+  if (opts && opts.scroll) box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function matchCluster(ids) {
+  if (!state.graph) return null;
+  return state.graph.clusters.find(c => c.upi.some(u => ids.upi.includes(u)) || c.phones.some(p => ids.phones.includes(p))) || null;
+}
+function renderCase() {
+  const el = $('#case'); if (!el || !state.flip) return;
+  const f = state.flip, ids = f.scan.ids;
+  const saved = state.chain.find(e => e.text === f.text);
+  const cl = matchCluster(ids);
+  const hasIds = ids.upi.length + ids.phones.length > 0;
+  const reported = state.myReports.some(r => r.text === f.text);
+  const steps = [
+    { on: !!saved, icon: 'i-lock', t: saved ? 'Sealed' : 'Seal it', d: saved ? `Item #${state.chain.indexOf(saved) + 1} · <code>${saved.hash.slice(0, 8)}</code>` : 'Tamper-proof evidence',
+      act: saved ? `<button class="btn ghost sm" type="button" data-open="dlg-vault">View all</button>` : `<button class="btn primary sm" type="button" id="seal">Seal</button>` },
+    { on: f.rights.length > 0, icon: 'i-scale', t: `${f.rights.length} law${f.rights.length === 1 ? '' : 's'}`, d: f.rights.length ? f.rights.map(r => esc(r.short)).join(', ') : 'None matched', act: '' },
+    { on: !!cl, icon: 'i-link', t: cl ? cl.id : 'Operator', d: cl ? `${cl.reporters} people · ${cl.apps.length} app names` : hasIds ? 'No match yet' : 'No UPI ID or number',
+      act: hasIds ? (reported ? '<span class="small muted">Shared</span>' : `<button class="btn ghost sm" type="button" id="report">Share IDs</button>`) : '' },
+    { on: !!state.shieldSent, icon: 'i-users', t: 'Warn contacts', d: 'Before they do', act: `<button class="btn ghost sm" type="button" data-open="dlg-shield">${state.shieldSent ? 'Sent' : 'Write it'}</button>` },
+    { on: false, icon: 'i-doc', t: 'Complaint', d: 'For legal aid or 1930', act: `<button class="btn ghost sm" type="button" data-open="dlg-packet">Build</button>` }
+  ];
+  const on = steps.filter(s => s.on).length;
+  const last = steps.reduce((m, s, i) => s.on ? i : m, -1);
+  el.innerHTML = `<div class="case-head"><h3>${tr('caseH')}</h3><span class="score num">${on} / 5</span></div>
+    <ol class="steps"><span class="fill" style="width:${last > 0 ? last * 20 : 0}%"></span>${steps.map(s => `<li class="${s.on ? 'on' : ''}"><span class="node">${ico(s.on ? 'i-check' : s.icon)}</span><div><div class="t">${s.t}</div><div class="d">${s.d}</div></div><div class="act">${s.act}</div></li>`).join('')}</ol>
+    ${hasIds && !reported ? `<p class="consent">Sharing adds only the UPI IDs, numbers and wording to the operator map${state.live.canWrite ? ' for everyone with this link' : ' on this device'}. Never your name or contacts.</p>` : ''}`;
+  const s = $('#seal'); if (s) s.addEventListener('click', async () => { await addToVault('message', f.text); });
+  const r = $('#report'); if (r) r.addEventListener('click', () => reportFlip());
+}
+
+document.addEventListener('click', e => {
+  const o = e.target.closest('[data-open]'); if (o) openDlg(o.dataset.open);
+  if (e.target.closest('[data-close]')) e.target.closest('dialog').close();
+});
+function openDlg(id) {
+  const d = document.getElementById(id);
+  if (id === 'dlg-packet') refreshPacket();
+  if (id === 'dlg-vault') renderVault();
+  if (typeof d.showModal === 'function') d.showModal(); else d.setAttribute('open', '');
+}
+$$('dialog').forEach(d => d.addEventListener('click', e => { if (e.target === d) d.close(); }));
+
+$('#flip-form').addEventListener('submit', e => { e.preventDefault(); flip($('#msg').value, { scroll: true }); });
+$$('[data-ex]').forEach(b => b.addEventListener('click', () => { $('#msg').value = EXAMPLES[+b.dataset.ex]; flip($('#msg').value, { scroll: true }); }));
+
+async function askAI(text) {
+  const box = $('#ai-box'); if (!box || !state.sample) return;
+  box.innerHTML = '<p class="small muted">Asking Claude…</p>';
+  const prompt = 'You help victims of illegal Indian loan apps. Read the message below. Reply with JSON only: {"harassment": true|false, "language": "<language in English>", "summary": "<one plain English sentence on what it threatens>", "truth": "<one or two calm sentences on what is actually true for the victim>"}. Do not invent facts.\n\nMESSAGE:\n' + text.slice(0, 3000);
+  try {
+    const a = await state.sample.json(prompt, { modelTier: 'quick' });
+    box.innerHTML = `<div class="flip"><div class="said"><span class="who">${esc(a.language || 'Message')}</span><q>${esc(a.summary || '')}</q></div><span class="arrow" aria-hidden="true">→</span><div class="fact"><b>${a.harassment ? 'This is harassment.' : 'This does not read as harassment.'}</b><p>${esc(a.truth || '')}</p></div></div><p class="small muted" style="margin-top:.4rem">AI reading by Claude. The word-list result above is what goes into your evidence.</p>`;
+  } catch (e) {
+    box.innerHTML = `<p class="small muted">${e && e.code === 'rate_limited' ? 'Too many requests. Try again in a minute.' : 'The AI reading isn’t available right now.'}</p>`;
+  }
+}
+
+/* ---------------- report to operator map ---------------- */
+function guessApp(text) { const names = [...new Set(LSDATA.SAMPLE_REPORTS.map(r => r.app))]; return names.find(n => text.toLowerCase().includes(n.toLowerCase())); }
+async function reportFlip() {
+  const f = state.flip; if (!f) return;
+  const ids = f.scan.ids, app = guessApp(f.text) || 'Unnamed app';
+  if (state.live.canWrite) {
+    const ok = await pushLiveReport({ app, upi: ids.upi.slice(0, 5), phones: ids.phones.slice(0, 5), script: LS.normaliseScript(f.text), ts: Date.now() });
+    if (ok) {
+      state.myReports.push({ reporter: 'YOU', app, day: 0, upi: ids.upi, phones: ids.phones, text: f.text, mine: true, shared: true });
+      store.set('loanshield_reports_v2', state.myReports); setGraphMode('live'); renderCase(); toast('Shared with the operator map'); return;
+    }
+  }
+  state.myReports.push({ reporter: 'YOU', app, day: 40, upi: ids.upi, phones: ids.phones, text: f.text, mine: true });
+  store.set('loanshield_reports_v2', state.myReports);
+  setGraphMode('sample'); renderCase();
+  const c = matchCluster(ids); toast(c && c.apps.length > 1 ? `Linked to ${c.id}: ${c.reporters} people, ${c.apps.length} app names` : 'Added to the operator map');
+}
+
+/* ---------------- Contact Shield ---------------- */
+function shieldText() { return LS.shieldMessage($('input[name=sh-lang]:checked').value, $('#sh-name').value); }
+function renderShield() { $('#sh-out').value = shieldText(); $('#sh-wa').href = 'https://wa.me/?text=' + encodeURIComponent(shieldText()); }
+$$('input[name=sh-lang]').forEach(r => r.addEventListener('change', renderShield));
+$('#sh-name').addEventListener('input', renderShield);
+$('#sh-copy').addEventListener('click', () => copyText(shieldText(), $('#sh-out'), 'Copied. Paste it to your contacts.'));
+async function shieldSent() { if (state.shieldSent) return; state.shieldSent = true; await addToVault('note', 'Warned my contacts that loan-app messages about me are false.'); }
+$('#sh-wa').addEventListener('click', shieldSent);
+$('#sh-log').addEventListener('click', async () => { await shieldSent(); $('#dlg-shield').close(); });
+renderShield();
+
+/* ---------------- evidence vault ---------------- */
+async function addToVault(kind, text) {
+  state.chain = await LS.appendEntry(state.chain, { ts: Date.now(), kind, text });
+  if (!store.set('loanshield_chain_v2', state.chain)) toast('Saved for this visit only. Your browser blocked storage.'); else toast('Sealed and added to your case');
+  renderCase(); if ($('#dlg-vault').open) renderVault();
+}
+async function renderVault(broken) {
+  const n = state.chain.length, list = $('#vault-list');
+  $('#verify-btn').disabled = $('#tamper-btn').disabled = $('#clear-vault').disabled = n === 0;
+  if (!n) { list.innerHTML = '<li class="muted">Nothing saved yet. Flip a threat and press <b>Add to my case</b>, or log a call below.</li>'; $('#chain-status').innerHTML = ''; return; }
+  const items = broken && broken.copy ? broken.copy : state.chain;
+  list.innerHTML = items.map((e, i) => {
+    const bad = broken && broken.at > -1 && i >= broken.at;
+    return `<li class="${bad ? 'bad' : ''}"><div class="meta"><span>#${i + 1}</span><span>${esc(new Date(e.ts).toLocaleString('en-IN'))}</span><span>${e.kind === 'note' ? 'Note' : 'Message'}</span>${bad ? '<b style="color:var(--threat)">Hash mismatch</b>' : ''}</div><div>${esc(e.text)}</div><div class="hash">SHA-256 ${e.hash}</div></li>`;
+  }).join('');
+  if (!broken) await verify(state.chain);
+}
+async function verify(chain, label) {
+  const v = await LS.verifyChain(chain);
+  $('#chain-status').innerHTML = v.ok ? `<p class="status ok">${ico('i-check')}Chain intact: ${chain.length} item${chain.length > 1 ? 's' : ''}, none changed since saving.</p>`
+    : `<p class="status bad">${ico('i-x')}${label || 'Chain broken'} at item ${v.brokenAt + 1}.</p>`;
+  return v;
+}
+$('#verify-btn').addEventListener('click', () => renderVault());
+$('#tamper-btn').addEventListener('click', async () => {
+  const copy = state.chain.map(e => ({ ...e }));
+  copy[0] = { ...copy[0], text: copy[0].text.replace(/\d/, d => String((+d + 1) % 10)) + (/\d/.test(copy[0].text) ? '' : ' (edited)') };
+  const v = await verify(copy, 'Tampering detected'); await renderVault({ copy, at: v.brokenAt });
+  $('#chain-status').insertAdjacentHTML('beforeend', '<p class="small muted">This edited a copy to show the effect. Your saved items are unchanged.</p>');
+});
+$('#clear-vault').addEventListener('click', () => { $('#clear-confirm').hidden = false; });
+$('#clear-no').addEventListener('click', () => { $('#clear-confirm').hidden = true; });
+$('#clear-yes').addEventListener('click', async () => { state.chain = []; store.del('loanshield_chain_v2'); $('#clear-confirm').hidden = true; await renderVault(); renderCase(); toast('All saved items deleted'); });
+$('#note-form').addEventListener('submit', async e => {
+  e.preventDefault(); const t = $('#note-text').value.trim();
+  if (t.length < 8) { $('#note-error').textContent = 'Write the time, the number and what was said.'; return; }
+  $('#note-error').textContent = ''; await addToVault('note', t); $('#note-text').value = '';
+  const late = LS.callTimes(t).filter(x => x.outside); if (late.length) toast(`${late[0].raw}: RBI bars recovery calls before 8 am or after 7 pm`);
+});
+
+/* ---------------- complaint packet ---------------- */
+async function refreshPacket() {
+  const texts = state.chain.map(e => e.text); if (state.flip) texts.push(state.flip.text);
+  const ids = { upi: [], phones: [], links: [] }, rights = new Map();
+  texts.forEach(t => { const x = LS.extractIdentifiers(t); ids.upi.push(...x.upi); ids.phones.push(...x.phones); ids.links.push(...x.links); LS.rightsFor(LS.scanMessage(t), t).forEach(r => rights.set(r.id, r)); });
+  Object.keys(ids).forEach(k => ids[k] = [...new Set(ids[k])]);
+  const v = await LS.verifyChain(state.chain), cl = matchCluster(ids);
+  $('#packet-out').value = LS.buildPacket({ date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+    name: $('#pk-name').value.trim(), city: $('#pk-city').value.trim(), summary: $('#pk-summary').value.trim(), truth: state.truth,
+    apps: cl ? cl.apps : (state.truth && state.truth.app ? [state.truth.app] : []), ids, cluster: cl && cl.published ? cl : null,
+    evidence: state.chain, chainOk: v.ok, brokenAt: v.brokenAt, rights: [...rights.values()] });
+}
+['#pk-name', '#pk-city', '#pk-summary'].forEach(id => $(id).addEventListener('input', refreshPacket));
+$('#packet-copy').addEventListener('click', () => copyText($('#packet-out').value, $('#packet-out'), 'Packet copied'));
+$('#packet-save').addEventListener('click', () => saveFile('loanshield-complaint-packet.txt', $('#packet-out').value));
+async function saveFile(name, data) {
+  if (state.downloads) {
+    try { await state.downloads.save({ filename: name, data }); toast('Saved ' + name); }
+    catch (e) { if (!e || e.code !== 'declined') toast('Saving isn’t available here. Use Copy instead.'); }
+    return;
+  }
+  try { const blob = data instanceof Blob ? data : new Blob([data], { type: 'text/plain' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); }
+  catch (e) { toast('Saving is blocked here. Use Copy instead.'); }
+}
+$$('[data-deck]').forEach(b => b.addEventListener('click', async () => {
+  const f = b.dataset.deck; if (!state.downloads) { location.href = 'downloads/' + f; return; }
+  b.disabled = true;
+  try { const res = await fetch('downloads/' + f); if (!res.ok) throw 0; await saveFile(f, await res.blob()); } catch (e) { toast('Couldn’t load the file. Try again.'); }
+  b.disabled = false;
+}));
+function copyText(t, el, msg) {
+  const fail = () => { if (el && el.select) { el.focus(); el.select(); toast('Selected. Press Ctrl+C to copy.'); } else toast('Copy blocked. Select the text by hand.'); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(() => toast(msg || 'Copied'), fail); else fail();
+}
+
+if ($('#check-form')) {
+/* ---------------- Before you borrow ---------------- */
+LS.RED_FLAG_QUESTIONS.forEach(q => $('#c-questions').insertAdjacentHTML('beforeend', `<label class="check"><input type="checkbox" value="${q.id}"><span>${esc(q.q)}</span></label>`));
+function runCheck(e) {
+  const g = id => +$(id).value;
+  // keep the sliders consistent: received ≤ promised, repay ≥ received
+  if (g('#c-received') > g('#c-promised')) { if (e && e.target.id === 'c-promised') $('#c-received').value = g('#c-promised'); else $('#c-promised').value = g('#c-received'); }
+  if (g('#c-repay') < g('#c-received')) $('#c-repay').value = g('#c-received');
+  $('#o-promised').textContent = '₹' + LS.fmt(g('#c-promised'));
+  $('#o-received').textContent = '₹' + LS.fmt(g('#c-received'));
+  $('#o-repay').textContent = '₹' + LS.fmt(g('#c-repay'));
+  $('#o-days').textContent = g('#c-days') + ' days';
+  const input = { promised: g('#c-promised'), received: g('#c-received'), repay: g('#c-repay'), days: g('#c-days'), answers: $$('#c-questions input:checked').map(i => i.value) };
+  const r = LS.truthCheck(input), out = $('#check-out');
+  if (r.error) { out.innerHTML = `<p>${esc(r.error)}</p>`; state.truth = null; return; }
+  state.truth = { ...input, apr: r.apr, app: '' };
+  const apr = Math.round(r.apr), scale = Math.max(apr, 50);
+  const bars = [['This app', apr, 'them'], ['Credit card', 42, ''], ['SHG / MFI loan', 26, '']];
+  out.innerHTML = `<span class="eyebrow">Real yearly cost</span>
+    <div class="apr ${r.verdict}">${LS.fmt(apr)}%</div>
+    <p class="apr-sub">₹${LS.fmt(r.totalCost)} extra on ₹${LS.fmt(input.received)}. That’s ₹${LS.fmt(Math.round(r.perDay))} every day.</p>
+    <div class="compare">${bars.map(([l, x, c]) => `<div class="bar ${c}"><span>${l}</span><span class="track"><i style="width:${Math.max(2, Math.min(100, x / scale * 100))}%"></i></span><span class="v">${LS.fmt(x)}%</span></div>`).join('')}</div>
+    ${r.flags.length ? `<ul class="flag-list">${r.flags.slice(0, 3).map(f => `<li>${esc(f.text)}</li>`).join('')}</ul>` : ''}
+    <p class="safer">${r.verdict === 'ok' ? 'No major warning signs. Still ask for the Key Fact Statement.' : 'Safer: ask your self-help group or a microfinance institution, or check the lender in RBI’s Digital Lending Apps directory.'}</p>`;
+}
+['#c-promised', '#c-received', '#c-repay', '#c-days'].forEach(id => $(id).addEventListener('input', runCheck));
+$('#c-questions').addEventListener('change', runCheck);
+$('#check-form').addEventListener('submit', e => { e.preventDefault(); runCheck(); });
+runCheck();
+
+}
+/* ---------------- system loop ---------------- */
+const STAGES = [
+  { n: 'Prevent', icon: 'i-calc', app: false, who: 'SHGs, microfinance groups, student volunteers', p: 'Remove the reason people borrow from scam apps.', items: ['Real-cost camps at SHG meetings and colleges', 'Fair small loans through SHGs and microfinance groups', 'WhatsApp lender check for basic phones'] },
+  { n: 'Detect', icon: 'i-search', app: true, who: 'This app + victims’ own reports', p: 'Find the operator behind the app names.', items: ['Links reports by UPI ID, number and wording', 'Public only after 3 different people report it', 'Operator files sent to app stores and payment apps'] },
+  { n: 'Protect', icon: 'i-shield', app: true, who: 'This app + cyber-safety NGO counsellors', p: 'Answer each threat with the facts, in the moment.', items: ['Flips every threat into the fact and the law', 'Contact warning in English, Hindi and Tamil', 'NGO counsellor callback for severe cases'] },
+  { n: 'Respond', icon: 'i-scale', app: false, who: 'Law-college legal-aid clinics, pro-bono lawyers', p: 'Turn sealed evidence into a filed case.', items: ['Clinics help victims file their complaint', 'Victims of one operator file together', 'Hash list proves the evidence was not edited'] },
+  { n: 'Reform', icon: 'i-chart', app: false, who: 'Students, media, researchers', p: 'Make the numbers public so platforms respond.', items: ['Public dashboard of operators and response times', 'Twice-yearly public report', 'Hotspots decide the next Prevent camps'] }
+];
+const loop = $('#loop');
+STAGES.forEach((s, i) => {
+  const a = -Math.PI / 2 + i * 2 * Math.PI / 5, x = 50 + 38 * Math.cos(a), y = 50 + 38 * Math.sin(a);
+  loop.insertAdjacentHTML('beforeend', `<button type="button" class="stage ${s.app ? 'app' : ''}" style="left:${x}%;top:${y}%" data-i="${i}" aria-pressed="false">${ico(s.icon)}<span>${s.n}</span></button>`);
+});
+function showStage(i) {
+  const s = STAGES[i];
+  $$('.stage').forEach((b, j) => b.setAttribute('aria-pressed', i === j));
+  $('#stage-panel').innerHTML = `<span class="eyebrow">Stage ${i + 1} of 5</span><h3 style="margin-top:.6rem">${s.n}</h3>
+    <span class="who ${s.app ? 'app' : 'ppl'}">${ico(s.app ? 'i-shield' : 'i-users')}${esc(s.who)}</span>
+    <p class="big">${esc(s.p)}</p><ul>${s.items.map(t => `<li>${ico('i-check')}<span>${esc(t)}</span></li>`).join('')}</ul>`;
+}
+loop.addEventListener('click', e => { const b = e.target.closest('.stage'); if (b) showStage(+b.dataset.i); });
+showStage(2);
+
+/* hero demo: flip the three bubbles in turn */
+(function () {
+  const cs = $$('[data-demo]'); if (!cs.length) return;
+  const still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (still) { cs.forEach(c => c.classList.add('flipped')); return; }
+  let k = 0;
+  setInterval(() => { const i = k % (cs.length + 1); if (i === cs.length) cs.forEach(c => c.classList.remove('flipped')); else cs[i].classList.add('flipped'); k++; }, 1600);
+})();
+
+/* ---------------- operator map ---------------- */
+function allReports() { return state.mode === 'live' ? state.live.reports : LSDATA.SAMPLE_REPORTS.concat(state.myReports.filter(r => !r.shared)); }
+function renderGraph() {
+  const reports = allReports();
+  state.graph = LS.buildGraph(reports);
+  $$('.seg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.mode === state.mode));
+  const live = state.mode === 'live', people = new Set(reports.map(r => r.reporter)).size;
+  $('#graph-status').innerHTML = live ? (state.live.on ? `<span class="live-dot"></span>Live: ${reports.length} report${reports.length === 1 ? '' : 's'} from ${people} ${people === 1 ? 'person' : 'people'}` : 'Live reports need this page opened through its Claude link.')
+    : 'Sample: 8 fictional reports, plus any you add on this device.';
+  const cl = state.graph.clusters, pub = cl.filter(c => c.published);
+  $('#stats').innerHTML = [[reports.length, 'reports'], [new Set(reports.map(r => r.app)).size, 'app names'], [cl.length, 'operators found'], [pub.length, 'published (3+ people)']].map(([b, s]) => `<div><b>${b}</b><span>${s}</span></div>`).join('');
+  $('#ops').innerHTML = live && !reports.length ? '<div class="op"><h3>No live reports yet</h3><p class="muted small" style="margin-top:.3rem">Flip a threat that contains a UPI ID or number, then press <b>Share identifiers</b>. It appears here for everyone with this link.</p></div>'
+    : cl.map(c => opCard(c, reports)).join('');
+  renderCase();
+}
+function setGraphMode(m) { state.mode = m; renderGraph(); }
+$$('.seg button').forEach(b => b.addEventListener('click', () => setGraphMode(b.dataset.mode)));
+function opCard(c, reports) {
+  const rs = c.idx.map(i => reports[i]), mine = rs.some(r => r.mine);
+  const ids = c.upi.map(u => ({ k: 'upi', v: u })).concat(c.phones.map(p => ({ k: 'phone', v: p })));
+  const rows = Math.max(c.apps.length, ids.length, 1), RH = 40, H = rows * RH + 16, W = 720, AX = 230, IX = 470;
+  const ay = i => 20 + i * RH + (rows - c.apps.length) * RH / 2, iy = i => 20 + i * RH + (rows - ids.length) * RH / 2;
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(c.id)}: ${c.apps.length} app names linked by ${ids.length} identifiers">`;
+  const seen = new Set();
+  rs.forEach(r => { const a = c.apps.indexOf(r.app); (r.upi || []).concat(r.phones || []).forEach(v => { const j = ids.findIndex(x => x.v === v), k = a + ':' + j; if (a > -1 && j > -1 && !seen.has(k)) { seen.add(k); svg += `<line x1="${AX + 8}" y1="${ay(a)}" x2="${IX - 8}" y2="${iy(j)}" stroke="var(--line)" stroke-width="2"/>`; } }); });
+  c.apps.forEach((a, i) => { const you = rs.some(r => r.mine && r.app === a); svg += `<circle cx="${AX}" cy="${ay(i)}" r="8" fill="${you ? 'var(--marigold)' : 'var(--teal)'}"/><text x="${AX - 16}" y="${ay(i) + 5}" text-anchor="end" font-size="15" font-weight="700" fill="var(--ink)" font-family="var(--body)">${esc(a)}</text>`; });
+  ids.forEach((x, j) => svg += `<rect x="${IX - 7}" y="${iy(j) - 7}" width="14" height="14" rx="3" fill="${x.k === 'upi' ? 'var(--threat)' : 'var(--mute)'}"/><text x="${IX + 16}" y="${iy(j) + 5}" font-size="13" fill="var(--ink)" font-family="var(--mono)">${esc(x.k === 'phone' ? LS.maskPhone(x.v) : x.v)}</text>`);
+  if (!ids.length) svg += `<text x="${IX - 7}" y="${iy(0) + 5}" font-size="13" fill="var(--mute)" font-family="var(--body)">linked by the same wording</text>`;
+  svg += '</svg>';
+  return `<article class="op ${mine ? 'you' : ''}"><div class="op-head"><h3>${esc(c.id)}${mine ? ' <span class="pill watch" style="font-size:.72rem">Includes yours</span>' : ''}</h3><span class="pill ${c.published ? 'high' : ''}">${c.published ? 'Published' : `Held · ${c.reporters} of ${LS.PUBLISH_THRESHOLD} people`}</span></div>
+    <p class="op-meta">${c.reports} report${c.reports > 1 ? 's' : ''} · ${c.reporters} ${c.reporters > 1 ? 'people' : 'person'} · ${c.apps.length} app name${c.apps.length > 1 ? 's' : ''}</p><div class="graph-wrap">${svg}</div></article>`;
+}
+
+/* live shared graph */
+async function pushLiveReport(rep) {
+  try {
+    const ref = state.live.db.doc('reports/' + state.live.uid), snap = await ref.get();
+    const items = (snap.exists && Array.isArray(snap.data().items) ? snap.data().items.slice() : []).slice(-49); items.push(rep);
+    await ref.set({ items, updated: Date.now() }); return true;
+  } catch (e) {
+    if (e && e.code === 'invalid_argument') state.live.canWrite = false;
+    toast('Couldn’t reach the shared map. Saved on this device instead.'); return false;
+  }
+}
+function liveToReports(docs) {
+  const out = [];
+  docs.forEach(d => { const b = d.data() || {}; (Array.isArray(b.items) ? b.items : []).forEach(it => {
+    if (!it || typeof it !== 'object') return;
+    out.push({ reporter: d.id, app: String(it.app || 'Unnamed app').slice(0, 60), ts: +it.ts || 0,
+      upi: (Array.isArray(it.upi) ? it.upi : []).map(String).filter(u => /^[a-z0-9._-]{2,}@[a-z]{2,}$/i.test(u)).slice(0, 5),
+      phones: (Array.isArray(it.phones) ? it.phones : []).map(String).filter(p => /^[6-9]\d{9}$/.test(p)).slice(0, 5),
+      text: String(it.script || '').slice(0, 600), mine: d.id === state.live.uid });
+  }); });
+  const t0 = Math.min(...out.map(r => r.ts).filter(Boolean), Date.now());
+  out.forEach(r => { r.day = Math.max(0, Math.round((r.ts - t0) / 864e5)); });
+  return out;
+}
+async function startLive() {
+  const cl = window.claude && typeof window.claude.use === 'function' ? window.claude : null;
+  const use = async n => { try { return cl ? await cl.use(n) : null; } catch (e) { return null; } };
+  const [db, user, downloads, sample] = await Promise.all([use('db'), use('user'), use('downloads'), use('sample')]);
+  state.downloads = downloads; state.sample = sample;
+  if (sample && state.flip) flip(state.flip.text);
+  if (!db || !user) { $('.seg button[data-mode=live]').disabled = true; return; }
+  const uid = await user.id().catch(() => null), can = await user.can('data.write').catch(() => null);
+  Object.assign(state.live, { db, uid, on: true, canWrite: !!uid && can !== false });
+  startInbox(user);
+  db.collection('reports').onSnapshot(snap => { state.live.reports = liveToReports(snap.docs); if (state.mode === 'live') renderGraph(); }, () => { state.live.on = false; });
+}
+
+/* validation line */
+(function () {
+  let tp = 0, fp = 0, fn = 0;
+  LSDATA.TEST_SET.forEach(([y, m]) => { const p = LS.scanMessage(m).score >= 40 ? 1 : 0; if (p && y) tp++; else if (p) fp++; else if (y) fn++; });
+  $('#val-line').textContent = `Scanner on 50 test messages: ${Math.round(tp / (tp + fn) * 100)}% recall, ${Math.round(tp / (tp + fp) * 100)}% precision.`;
+})();
+
+/* boot */
+renderGraph();
+$('#msg').value = EXAMPLES[0];
+flip(EXAMPLES[0]);
+applyLang(state.lang);
+startLive();
+})();
+</script>
+</body>
+</html>
