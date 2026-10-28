@@ -1,6 +1,6 @@
 # LoanShield
 
-**Their threats are your evidence.** A Social & Sustainability project on illegal loan-app harassment in India (SDGs 1, 8, 10 and 16).
+**Their threats are your evidence.** A Social & Sustainability project on illegal loan-app harassment in India (main goal SDG 10, Reduced Inequalities; also SDGs 1, 8 and 16).
 
 Other tools try to block the threats. LoanShield turns each threat into a fact for the victim and evidence against the operator.
 
